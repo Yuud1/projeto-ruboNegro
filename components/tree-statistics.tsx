@@ -19,6 +19,7 @@ export function TreeStatistics({ tree }: TreeStatisticsProps) {
         height: 0,
         blackHeight: 0,
         isValid: true,
+        violations: [],
       }
     }
 
@@ -28,6 +29,7 @@ export function TreeStatistics({ tree }: TreeStatisticsProps) {
     let maxHeight = 0
     let isValid = true
     let blackHeight = -1
+    let violations: string[] = []
 
     const traverse = (n: TreeNode | null, depth: number, currentBlackHeight: number): number => {
       if (!n) {
@@ -35,6 +37,7 @@ export function TreeStatistics({ tree }: TreeStatisticsProps) {
           blackHeight = currentBlackHeight
         } else if (blackHeight !== currentBlackHeight) {
           isValid = false
+          violations.push(`Altura preta inconsistente: esperado ${blackHeight}, encontrado ${currentBlackHeight}`)
         }
         return currentBlackHeight
       }
@@ -44,9 +47,9 @@ export function TreeStatistics({ tree }: TreeStatisticsProps) {
 
       if (n.color === NodeColor.RED) {
         redNodes++
-        // Check if red node has red parent
         if (n.parent && n.parent.color === NodeColor.RED) {
           isValid = false
+          violations.push(`Nó vermelho ${n.value} tem pai vermelho ${n.parent.value}`)
         }
       } else {
         blackNodes++
@@ -58,12 +61,18 @@ export function TreeStatistics({ tree }: TreeStatisticsProps) {
 
       if (leftBlackHeight !== rightBlackHeight) {
         isValid = false
+        violations.push(`Alturas pretas diferentes: esquerda ${leftBlackHeight}, direita ${rightBlackHeight}`)
       }
 
       return currentBlackHeight
     }
 
     traverse(node, 0, 0)
+
+    if (node.color !== NodeColor.BLACK) {
+      isValid = false
+      violations.push(`Raiz deve ser preta, mas é ${node.color}`)
+    }
 
     return {
       totalNodes,
@@ -72,6 +81,7 @@ export function TreeStatistics({ tree }: TreeStatisticsProps) {
       height: maxHeight,
       blackHeight,
       isValid,
+      violations,
     }
   }
 
@@ -113,6 +123,17 @@ export function TreeStatistics({ tree }: TreeStatisticsProps) {
             {stats.isValid ? "✓ Árvore Válida" : "✗ Árvore Inválida"}
           </Badge>
         </div>
+
+        {!stats.isValid && stats.violations.length > 0 && (
+          <div className="mt-3 p-3 bg-red-50 border border-red-200 rounded-lg">
+            <div className="text-sm font-medium text-red-800 mb-2">Violações encontradas:</div>
+            <ul className="text-xs text-red-700 space-y-1">
+              {stats.violations.map((violation, index) => (
+                <li key={index}>• {violation}</li>
+              ))}
+            </ul>
+          </div>
+        )}
       </div>
     </Card>
   )

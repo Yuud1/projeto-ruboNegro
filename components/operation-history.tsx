@@ -69,7 +69,6 @@ export function OperationHistory({ steps, currentStep, onGoToStep }: OperationHi
         <CollapsibleContent className="mt-3">
           <div className="space-y-4">
 
-             {/* Operations List */}
              <ScrollArea className="h-64">
                <div className="space-y-2 pr-4 pb-2">
                  {steps.map((step, index) => (

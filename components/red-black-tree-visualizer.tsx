@@ -9,15 +9,13 @@ import { StepNavigator } from "./step-navigator"
 import { TreeIntroduction } from "./tree-introduction"
 import { TreeStatistics } from "./tree-statistics"
 import { RandomGenerator } from "./random-generator"
-import { TreeComparison } from "./tree-comparison"
 import { PresentationMode } from "./presentation-mode"
 import { OperationHistory } from "./operation-history"
 import { useRedBlackTree } from "@/hooks/use-red-black-tree"
-import { Plus, Minus, RotateCcw, GitCompare, Presentation } from "lucide-react"
+import { Plus, Minus, RotateCcw, Presentation } from "lucide-react"
 
 export function RedBlackTreeVisualizer() {
   const [inputValue, setInputValue] = useState("")
-  const [showComparison, setShowComparison] = useState(false)
   const [showPresentation, setShowPresentation] = useState(false)
   const {
     insertValue,
@@ -51,9 +49,6 @@ export function RedBlackTreeVisualizer() {
       const success = deleteValue(value)
       if (success) {
         setInputValue("")
-      } else {
-        setSearchResult(`Valor ${value} não encontrado na árvore`)
-        setTimeout(() => setSearchResult(""), 3000)
       }
     }
   }
@@ -77,7 +72,7 @@ export function RedBlackTreeVisualizer() {
     <div className="min-h-screen bg-background">
       {/* Header */}
       <header className="border-b border-border bg-card">
-        <div className="container mx-auto px-4 py-6">
+        <div className="container mx-auto px-4 py-6 lg:px-8 xl:px-12">
           <h1 className="text-3xl font-bold text-foreground text-balance">Visualizador de Árvore Rubro-Negra</h1>
           <p className="text-muted-foreground mt-2 text-pretty">
             Ferramenta educativa interativa para aprender sobre estruturas de dados
@@ -85,7 +80,7 @@ export function RedBlackTreeVisualizer() {
         </div>
       </header>
 
-      <div className="container mx-auto px-4 py-6">
+      <div className="container mx-auto px-4 py-6 lg:px-8 xl:px-12">
         {showPresentation ? (
           <PresentationMode 
             onExit={() => setShowPresentation(false)}
@@ -101,16 +96,11 @@ export function RedBlackTreeVisualizer() {
             goToStep={goToStep}
             reset={handleReset}
           />
-        ) : showComparison ? (
-          <TreeComparison />
         ) : (
           <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-            {/* Main Tree Visualization Area */}
             <div className="lg:col-span-3 space-y-6">
-            {/* Input Controls */}
-            <Card className="p-4">
+            <Card className="p-4 card-professional">
               <div className="space-y-4">
-                {/* Insert/Delete Controls */}
                 <div className="flex flex-col sm:flex-row gap-4">
                   <div className="flex gap-2 flex-1">
                     <Input
@@ -121,32 +111,24 @@ export function RedBlackTreeVisualizer() {
                       onKeyPress={(e) => e.key === "Enter" && handleInsertNode()}
                       className="flex-1"
                     />
-                    <Button onClick={handleInsertNode} className="shrink-0">
+                    <Button onClick={handleInsertNode} className="shrink-0 btn-professional btn-primary-professional">
                       <Plus className="w-4 h-4 mr-2" />
                       Inserir
                     </Button>
-                    <Button variant="destructive" onClick={handleDeleteNode} className="shrink-0">
+                    <Button variant="destructive" onClick={handleDeleteNode} className="shrink-0 btn-professional btn-destructive-professional">
                       <Minus className="w-4 h-4 mr-2" />
                       Remover
                     </Button>
                   </div>
-
-                  <Button variant="outline" onClick={handleReset}>
+                  <Button variant="outline" onClick={handleReset} className="btn-professional btn-outline-professional">
                     <RotateCcw className="w-4 h-4 mr-2" />
                     Resetar
                   </Button>
 
                   <Button 
-                    variant={showComparison ? "default" : "outline"} 
-                    onClick={() => setShowComparison(!showComparison)}
-                  >
-                    <GitCompare className="w-4 h-4 mr-2" />
-                    Comparar
-                  </Button>
-
-                  <Button 
                     variant="outline" 
                     onClick={() => setShowPresentation(true)}
+                    className="btn-professional btn-outline-professional"
                   >
                     <Presentation className="w-4 h-4 mr-2" />
                     Apresentação
@@ -156,7 +138,6 @@ export function RedBlackTreeVisualizer() {
               </div>
             </Card>
 
-            {/* Step Navigation */}
             <StepNavigator
               currentStep={currentStep}
               totalSteps={totalSteps}
@@ -169,8 +150,7 @@ export function RedBlackTreeVisualizer() {
               currentStepData={currentStepData}
             />
 
-            {/* Tree Visualization */}
-            <Card className="p-6 min-h-[500px]">
+            <Card className="p-6 min-h-[500px] card-professional">
               <TreeVisualization
                 tree={currentTree}
                 nodePositions={nodePositions}
@@ -178,22 +158,16 @@ export function RedBlackTreeVisualizer() {
                 currentStepType={currentStepData?.type}
               />
             </Card>
+
           </div>
 
-          {/* Sidebar */}
           <div className="lg:col-span-1 space-y-6">
-            {/* Introduction */}
             <TreeIntroduction />
 
-            {/* Random Generator */}
             <RandomGenerator onGenerate={handleRandomGenerate} />
 
-            {/* Tree Statistics */}
             <TreeStatistics tree={currentTree} />
 
-
-
-            {/* Operation History */}
             <OperationHistory steps={steps} currentStep={currentStep} onGoToStep={goToStep} />
             </div>
           </div>

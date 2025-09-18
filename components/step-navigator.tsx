@@ -96,7 +96,7 @@ export function StepNavigator({
   }
 
   return (
-    <Card className="p-4 space-y-4">
+    <Card className="p-6 space-y-4">
       <div className="flex items-center justify-between">
         <h3 className="font-semibold">Navegação de Passos</h3>
         {currentStepData && (
@@ -104,7 +104,6 @@ export function StepNavigator({
         )}
       </div>
 
-      {/* Step Progress Slider */}
       <div className="space-y-2">
         <div className="flex items-center justify-between text-sm text-muted-foreground">
           <span>Passo {currentStep + 1}</span>
@@ -120,7 +119,6 @@ export function StepNavigator({
         />
       </div>
 
-      {/* Navigation Controls */}
       <div className="flex items-center justify-center gap-2">
         <Button variant="outline" size="sm" onClick={onReset} disabled={totalSteps <= 1} title="Resetar para o início">
           <RotateCcw className="w-4 h-4" />
@@ -165,7 +163,6 @@ export function StepNavigator({
         </Button>
       </div>
 
-      {/* Auto-play Speed Control */}
       {isAutoPlaying && (
         <div className="space-y-2 pt-2 border-t">
           <div className="flex items-center justify-between text-sm">
@@ -183,7 +180,6 @@ export function StepNavigator({
         </div>
       )}
 
-      {/* Current Step Description */}
       {currentStepData && (
         <div className="p-3 bg-muted rounded-lg">
           <p className="text-sm font-medium text-foreground">{currentStepData.description}</p>

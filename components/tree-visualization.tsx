@@ -54,7 +54,7 @@ export function TreeVisualization({
   }
 
   const handleMouseDown = (e: React.MouseEvent) => {
-    if (e.button === 1 || (e.button === 0 && e.ctrlKey)) { // Middle mouse or Ctrl+Left
+    if (e.button === 1 || (e.button === 0 && e.ctrlKey)) {
       setIsPanning(true)
       setLastPanPoint({ x: e.clientX, y: e.clientY })
       e.preventDefault()
@@ -79,39 +79,46 @@ export function TreeVisualization({
 
   const handleWheel = (e: React.WheelEvent) => {
     e.preventDefault()
+    e.stopPropagation()
     const delta = e.deltaY > 0 ? 0.9 : 1.1
     setZoom(prev => Math.max(0.1, Math.min(3, prev * delta)))
   }
 
+  useEffect(() => {
+    const svgElement = svgRef.current
+    if (svgElement) {
+      const handleWheelNonPassive = (e: WheelEvent) => {
+        e.preventDefault()
+        e.stopPropagation()
+        const delta = e.deltaY > 0 ? 0.9 : 1.1
+        setZoom(prev => Math.max(0.1, Math.min(3, prev * delta)))
+      }
+      
+      svgElement.addEventListener('wheel', handleWheelNonPassive, { passive: false })
+      
+      return () => {
+        svgElement.removeEventListener('wheel', handleWheelNonPassive)
+      }
+    }
+  }, [])
+
   const { nodes, edges, newNodes } = useMemo(() => {
+    if (!tree) return { nodes: [], edges: [], newNodes: new Set<string>() }
+    
     const nodeList: TreeNode[] = []
     const edgeList: Array<{ from: TreeNode; to: TreeNode; isNew?: boolean }> = []
     const newNodeSet = new Set<string>()
-
-    const previousNodeIds = new Set<string>()
-    const traversePrevious = (node: TreeNode | null) => {
-      if (!node) return
-      previousNodeIds.add(node.id)
-      traversePrevious(node.left)
-      traversePrevious(node.right)
-    }
-    traversePrevious(previousTree)
 
     const traverse = (node: TreeNode | null) => {
       if (!node) return
 
       nodeList.push(node)
 
-      // Mark as new if not in previous tree
-      if (!previousNodeIds.has(node.id)) {
-        newNodeSet.add(node.id)
-      }
-
       if (node.left) {
         edgeList.push({
           from: node,
           to: node.left,
-          isNew: !previousNodeIds.has(node.left.id),
+          isNew: false,
         })
         traverse(node.left)
       }
@@ -120,7 +127,7 @@ export function TreeVisualization({
         edgeList.push({
           from: node,
           to: node.right,
-          isNew: !previousNodeIds.has(node.right.id),
+          isNew: false,
         })
         traverse(node.right)
       }
@@ -129,13 +136,19 @@ export function TreeVisualization({
     traverse(tree)
 
     return { nodes: nodeList, edges: edgeList, newNodes: newNodeSet }
-  }, [tree, previousTree])
+  }, [tree])
 
   if (!tree) {
     return (
       <div className="flex items-center justify-center h-96 border-2 border-dashed border-border rounded-lg bg-gradient-to-br from-background to-muted/20">
         <div className="text-center text-muted-foreground">
-          <div className="text-6xl mb-4 animate-bounce">🌳</div>
+          <div className="mb-4">
+            <div className="flex justify-center space-x-1">
+              <div className="w-3 h-3 bg-primary rounded-full animate-bounce"></div>
+              <div className="w-3 h-3 bg-primary rounded-full animate-bounce" style={{animationDelay: '0.1s'}}></div>
+              <div className="w-3 h-3 bg-primary rounded-full animate-bounce" style={{animationDelay: '0.2s'}}></div>
+            </div>
+          </div>
           <p className="text-lg font-medium">Visualização da Árvore</p>
           <p className="text-sm">A árvore aparecerá aqui quando você inserir valores</p>
         </div>
@@ -143,7 +156,6 @@ export function TreeVisualization({
     )
   }
 
-  // Calculate SVG dimensions based on node positions
   const bounds = Array.from(nodePositions.values()).reduce(
     (acc, pos) => ({
       minX: Math.min(acc.minX, pos.x),
@@ -186,7 +198,6 @@ export function TreeVisualization({
   return (
     <div className="flex items-center justify-center min-h-96 p-4">
       <div className="relative overflow-hidden max-w-full max-h-[500px] border border-border rounded-lg bg-gradient-to-br from-card to-muted/10 shadow-lg">
-        {/* Zoom Controls */}
         <div className="absolute top-2 right-2 z-10 flex flex-col gap-1">
           <Button size="sm" variant="outline" onClick={handleZoomIn}>
             <ZoomIn className="w-4 h-4" />
@@ -199,7 +210,6 @@ export function TreeVisualization({
           </Button>
         </div>
 
-        {/* Pan indicator */}
         {isPanning && (
           <div className="absolute top-2 left-2 z-10">
             <div className="flex items-center gap-2 px-2 py-1 bg-primary text-primary-foreground rounded text-sm">
@@ -218,7 +228,6 @@ export function TreeVisualization({
           onMouseMove={handleMouseMove}
           onMouseUp={handleMouseUp}
           onMouseLeave={handleMouseUp}
-          onWheel={handleWheel}
           style={{
             transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom})`,
             transformOrigin: 'center center',
@@ -238,15 +247,14 @@ export function TreeVisualization({
             </filter>
           </defs>
 
-          {/* Render edges first (behind nodes) */}
           {edges.map((edge, index) => {
             const fromPos = nodePositions.get(edge.from.id)
             const toPos = nodePositions.get(edge.to.id)
 
             if (!fromPos || !toPos) {
-              console.log(`Missing position for edge: ${edge.from.id} -> ${edge.to.id}`)
               return null
             }
+
 
             return (
               <TreeEdge
@@ -264,7 +272,6 @@ export function TreeVisualization({
             )
           })}
 
-          {/* Render nodes on top of edges */}
           {nodes.map((node) => {
             const position = nodePositions.get(node.id)
             if (!position) return null

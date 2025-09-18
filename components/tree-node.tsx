@@ -65,7 +65,6 @@ export function TreeNode({ node, x, y, isHighlighted = false, animationType = nu
         className="transition-all duration-500 ease-in-out"
       />
 
-      {/* Node background with smooth color transitions */}
       <circle
         cx={x}
         cy={y}
@@ -79,7 +78,6 @@ export function TreeNode({ node, x, y, isHighlighted = false, animationType = nu
         }}
       />
 
-      {/* Node value text with smooth transitions */}
       <text
         x={x}
         y={y}
@@ -96,7 +94,6 @@ export function TreeNode({ node, x, y, isHighlighted = false, animationType = nu
         {node.value}
       </text>
 
-      {/* Highlight ring for affected nodes with pulsing animation */}
       {isHighlighted && (
         <circle
           cx={x}
@@ -113,7 +110,6 @@ export function TreeNode({ node, x, y, isHighlighted = false, animationType = nu
         />
       )}
 
-      {/* Insert animation ring */}
       {animationType === "insert" && isAnimating && (
         <circle
           cx={x}

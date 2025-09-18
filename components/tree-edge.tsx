@@ -20,7 +20,6 @@ export function TreeEdge({ from, to, isAnimated = false }: TreeEdgeProps) {
     }
   }, [isAnimated])
 
-  // Calculate edge endpoints to stop at node boundaries
   const dx = to.x - from.x
   const dy = to.y - from.y
   const distance = Math.sqrt(dx * dx + dy * dy)

@@ -55,7 +55,6 @@ export function PresentationMode({
   const [showStats, setShowStats] = useState(true)
   const [isMuted, setIsMuted] = useState(false)
 
-  // Auto-play functionality
   useEffect(() => {
     if (!isPlaying) return
 
@@ -70,7 +69,6 @@ export function PresentationMode({
     return () => clearInterval(interval)
   }, [isPlaying, canGoNext, nextStep, playbackSpeed])
 
-  // Fullscreen functionality
   useEffect(() => {
     const handleFullscreenChange = () => {
       setIsFullscreen(!!document.fullscreenElement)
@@ -154,7 +152,6 @@ export function PresentationMode({
 
   return (
     <div className={`fixed inset-0 z-50 bg-background ${isFullscreen ? 'p-0' : 'p-4'}`}>
-      {/* Header */}
       <div className="flex items-center justify-between mb-4 p-4 bg-card border-b">
         <div className="flex items-center gap-4">
           <h1 className="text-2xl font-bold">Modo Apresentação</h1>
@@ -182,7 +179,6 @@ export function PresentationMode({
       </div>
 
       <div className="flex h-[calc(100vh-120px)] gap-4">
-        {/* Main Visualization */}
         <div className="flex-1">
           <Card className="h-full p-6">
             <TreeVisualization
@@ -194,13 +190,10 @@ export function PresentationMode({
           </Card>
         </div>
 
-        {/* Sidebar */}
         {showStats && (
           <div className="w-80 space-y-4">
-            {/* Statistics */}
             <TreeStatistics tree={tree} />
 
-            {/* Step Description */}
             {currentStepData && (
               <Card className="p-4">
                 <h3 className="font-semibold mb-2">Descrição do Passo</h3>
@@ -213,11 +206,9 @@ export function PresentationMode({
         )}
       </div>
 
-      {/* Controls */}
       <div className="fixed bottom-4 left-1/2 transform -translate-x-1/2">
         <Card className="p-4 shadow-lg">
           <div className="flex items-center gap-4">
-            {/* Playback Controls */}
             <div className="flex items-center gap-2">
               <Button variant="outline" size="sm" onClick={handleGoToStart} disabled={currentStep === 0}>
                 <SkipBack className="w-4 h-4" />
@@ -245,7 +236,6 @@ export function PresentationMode({
               </Button>
             </div>
 
-            {/* Speed Control */}
             <div className="flex items-center gap-2 min-w-[200px]">
               <span className="text-sm text-muted-foreground">Velocidade:</span>
               <Slider
@@ -261,7 +251,6 @@ export function PresentationMode({
               </span>
             </div>
 
-            {/* Reset */}
             <Button variant="outline" size="sm" onClick={handleReset}>
               <RotateCcw className="w-4 h-4" />
             </Button>

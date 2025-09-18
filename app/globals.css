@@ -259,3 +259,49 @@
 .animate-fade-in-up {
   animation: fadeInUp 0.5s ease-out;
 }
+
+/* Professional button styles */
+.btn-professional {
+  @apply transition-all duration-200 ease-in-out;
+  @apply hover:shadow-md hover:scale-[1.02];
+  @apply active:scale-[0.98];
+  @apply focus:ring-2 focus:ring-primary/20;
+}
+
+.btn-primary-professional {
+  @apply bg-primary text-primary-foreground;
+  @apply hover:bg-primary/90 hover:shadow-lg;
+  @apply border border-primary/20;
+}
+
+.btn-secondary-professional {
+  @apply bg-secondary text-secondary-foreground;
+  @apply hover:bg-secondary/90 hover:shadow-lg;
+  @apply border border-secondary/20;
+}
+
+.btn-outline-professional {
+  @apply bg-background text-foreground border-border;
+  @apply hover:bg-muted hover:border-primary/30;
+  @apply hover:text-primary;
+}
+
+.btn-destructive-professional {
+  @apply bg-destructive text-destructive-foreground;
+  @apply hover:bg-destructive/90 hover:shadow-lg;
+  @apply border border-destructive/20;
+}
+
+/* Professional icon styles */
+.icon-professional {
+  @apply transition-colors duration-200;
+  @apply text-muted-foreground;
+  @apply hover:text-primary;
+}
+
+/* Professional card hover effects */
+.card-professional {
+  @apply transition-all duration-200 ease-in-out;
+  @apply hover:shadow-lg hover:border-primary/20;
+  @apply hover:scale-[1.01];
+}

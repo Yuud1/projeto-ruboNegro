@@ -11,7 +11,6 @@ export function TreeIntroduction() {
 
   return (
     <div className="space-y-4">
-      {/* Main Introduction */}
       <Card className="p-4">
         <div className="flex items-start gap-3">
           <Info className="w-5 h-5 text-primary mt-0.5 shrink-0" />
@@ -32,7 +31,6 @@ export function TreeIntroduction() {
         </div>
       </Card>
 
-      {/* Rules Section */}
       <Card className="p-4">
         <Collapsible open={isRulesOpen} onOpenChange={setIsRulesOpen}>
           <CollapsibleTrigger className="flex items-center justify-between w-full text-left">
