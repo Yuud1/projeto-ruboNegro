@@ -11,6 +11,7 @@ import { TreeStatistics } from "./tree-statistics"
 import { RandomGenerator } from "./random-generator"
 import { PresentationMode } from "./presentation-mode"
 import { OperationHistory } from "./operation-history"
+import { SequenceManager } from "./sequence-manager"
 import { useRedBlackTree } from "@/hooks/use-red-black-tree"
 import { Plus, Minus, RotateCcw, Presentation } from "lucide-react"
 
@@ -28,6 +29,7 @@ export function RedBlackTreeVisualizer() {
     getCurrentTree,
     getCurrentStep,
     getNodePositions,
+    loadSequence,
     currentStep,
     totalSteps,
     steps,
@@ -169,6 +171,11 @@ export function RedBlackTreeVisualizer() {
             <TreeStatistics tree={currentTree} />
 
             <OperationHistory steps={steps} currentStep={currentStep} onGoToStep={goToStep} />
+
+            <SequenceManager 
+              currentSteps={steps} 
+              onLoadSequence={loadSequence} 
+            />
             </div>
           </div>
         )}

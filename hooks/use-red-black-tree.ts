@@ -2,11 +2,13 @@
 
 import { useState, useCallback, useRef } from "react"
 import { RedBlackTree, type TreeStep, type TreeNode } from "@/lib/red-black-tree"
+import { useSequenceStorage } from "./use-sequence-storage"
 
 export function useRedBlackTree() {
   const treeRef = useRef(new RedBlackTree())
   const [currentStep, setCurrentStep] = useState(0)
   const [steps, setSteps] = useState<TreeStep[]>(() => treeRef.current.getSteps())
+  const { saveSequence } = useSequenceStorage()
 
   const insertValue = useCallback((value: number) => {
     treeRef.current.insert(value)
@@ -83,6 +85,29 @@ export function useRedBlackTree() {
     return treeRef.current.calculateNodePositions(currentTree)
   }, [getCurrentTree])
 
+  const loadSequence = useCallback((operations: Array<{type: 'insert' | 'delete', value: number}>) => {
+    // Reset the tree and load the sequence
+    treeRef.current.reset()
+    setCurrentStep(0)
+    
+    // Replay all operations from the sequence
+    operations.forEach((operation) => {
+      if (operation.type === "insert") {
+        treeRef.current.insert(operation.value)
+      } else if (operation.type === "delete") {
+        treeRef.current.delete(operation.value)
+      }
+    })
+    
+    const newSteps = treeRef.current.getSteps()
+    setSteps([...newSteps])
+    setCurrentStep(newSteps.length - 1)
+  }, [])
+
+  const saveCurrentSequence = useCallback((name: string, description?: string) => {
+    return saveSequence(name, steps, description)
+  }, [saveSequence, steps])
+
   return {
     insertValue,
     deleteValue,
@@ -96,6 +121,8 @@ export function useRedBlackTree() {
     getCurrentTree,
     getCurrentStep,
     getNodePositions,
+    loadSequence,
+    saveCurrentSequence,
     currentStep,
     totalSteps: steps.length,
     steps,
