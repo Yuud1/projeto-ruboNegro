@@ -56,7 +56,7 @@ export function TreeNode({ node, x, y, isHighlighted = false, animationType = nu
         transformOrigin: `${x}px ${y}px`,
       }}
     >
-      {/* Node shadow with animation */}
+      
       <circle
         cx={x + 2}
         cy={y + 2}

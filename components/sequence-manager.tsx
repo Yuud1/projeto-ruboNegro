@@ -134,7 +134,6 @@ export function SequenceManager({ currentSteps, onLoadSequence }: SequenceManage
         
         <CollapsibleContent className="mt-4">
           <div className="space-y-4">
-            {/* Ações principais */}
             <div className="flex gap-2">
               <Dialog open={isSaveDialogOpen} onOpenChange={setIsSaveDialogOpen}>
                 <DialogTrigger asChild>
@@ -208,7 +207,6 @@ export function SequenceManager({ currentSteps, onLoadSequence }: SequenceManage
               )}
             </div>
 
-            {/* Lista de sequências salvas */}
             {savedSequences.length > 0 ? (
               <ScrollArea className="h-64 [&>[data-radix-scroll-area-scrollbar]]:hidden">
                 <div className="space-y-2">
@@ -316,7 +314,6 @@ export function SequenceManager({ currentSteps, onLoadSequence }: SequenceManage
         </CollapsibleContent>
       </Collapsible>
 
-      {/* Dialog de edição */}
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
         <DialogContent>
           <DialogHeader>
