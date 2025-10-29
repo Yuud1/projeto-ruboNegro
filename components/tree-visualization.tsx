@@ -42,6 +42,7 @@ export function TreeVisualization({
   onCenterView,
 }: TreeVisualizationProps) {
   const [animatingNodes, setAnimatingNodes] = useState<Set<string>>(new Set())
+  const [highlightedNodes, setHighlightedNodes] = useState<Set<string>>(new Set())
   const [previousTree, setPreviousTree] = useState<TreeNode | null>(null)
   const [zoom, setZoom] = useState(1)
   const [pan, setPan] = useState({ x: 0, y: 0 })
@@ -52,7 +53,11 @@ export function TreeVisualization({
   useEffect(() => {
     if (affectedNodes.length > 0 && currentStepType) {
       setAnimatingNodes(new Set(affectedNodes))
-      const timer = setTimeout(() => setAnimatingNodes(new Set()), 600)
+      setHighlightedNodes(new Set(affectedNodes))
+      const timer = setTimeout(() => {
+        setAnimatingNodes(new Set())
+        setHighlightedNodes(new Set())
+      }, 5000)
       return () => clearTimeout(timer)
     }
   }, [affectedNodes, currentStepType])
@@ -329,7 +334,7 @@ export function TreeVisualization({
                 node={node}
                 x={position.x + offsetX}
                 y={position.y + offsetY}
-                isHighlighted={affectedNodes.includes(node.id)}
+                isHighlighted={highlightedNodes.has(node.id)}
                 animationType={getAnimationType(node.id)}
               />
             )

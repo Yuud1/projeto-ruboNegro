@@ -20,7 +20,7 @@ export function TreeNode({ node, x, y, isHighlighted = false, animationType = nu
   useEffect(() => {
     if (animationType) {
       setIsAnimating(true)
-      const timer = setTimeout(() => setIsAnimating(false), 600)
+      const timer = setTimeout(() => setIsAnimating(false), 500)
       return () => clearTimeout(timer)
     }
   }, [animationType])
