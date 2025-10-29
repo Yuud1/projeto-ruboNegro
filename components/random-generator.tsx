@@ -50,7 +50,7 @@ export function RandomGenerator({ onGenerate }: RandomGeneratorProps) {
     <Card className="p-4">
       <div className="flex items-center justify-between mb-3">
         <h3 className="font-semibold">Gerador Aleatório</h3>
-        <Button variant="ghost" size="sm" onClick={() => setShowSettings(!showSettings)}>
+        <Button variant="ghost" size="sm" onClick={() => setShowSettings(!showSettings)} className="cursor-pointer">
           <Settings className="w-4 h-4" />
         </Button>
       </div>
@@ -59,7 +59,7 @@ export function RandomGenerator({ onGenerate }: RandomGeneratorProps) {
         <div className="space-y-4 mb-4 p-3 bg-muted rounded-lg">
           <div className="space-y-2">
             <Label htmlFor="count">Quantidade de valores: {count}</Label>
-            <Slider value={[count]} onValueChange={(value) => setCount(value[0])} max={15} min={1} step={1} />
+            <Slider value={[count]} onValueChange={(value) => setCount(value[0])} max={15} min={1} step={1} className="cursor-pointer" />
           </div>
 
           <div className="grid grid-cols-2 gap-3">
@@ -89,7 +89,7 @@ export function RandomGenerator({ onGenerate }: RandomGeneratorProps) {
             <Label>Presets:</Label>
             <div className="grid grid-cols-2 gap-2">
               {presets.map((preset) => (
-                <Button key={preset.name} variant="outline" size="sm" onClick={() => applyPreset(preset)}>
+                <Button key={preset.name} variant="outline" size="sm" onClick={() => applyPreset(preset)} className="cursor-pointer">
                   {preset.name}
                 </Button>
               ))}
@@ -98,7 +98,7 @@ export function RandomGenerator({ onGenerate }: RandomGeneratorProps) {
         </div>
       )}
 
-      <Button onClick={handleGenerate} className="w-full">
+      <Button onClick={handleGenerate} className="w-full cursor-pointer">
         <Shuffle className="w-4 h-4 mr-2" />
         Gerar {count} Valores
       </Button>

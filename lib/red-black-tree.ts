@@ -125,7 +125,6 @@ export class RedBlackTree {
         const uncle = node.parent.parent.right
 
         if (uncle && uncle.color === NodeColor.RED) {
-          // Case 1: Uncle is red
           node.parent.color = NodeColor.BLACK
           uncle.color = NodeColor.BLACK
           node.parent.parent.color = NodeColor.RED
@@ -137,11 +136,9 @@ export class RedBlackTree {
           node = node.parent.parent
         } else {
           if (node === node.parent.right) {
-            // Case 2: Node is right child
             node = node.parent
             this.rotateLeft(node)
           }
-          // Case 3: Node is left child
           node.parent!.color = NodeColor.BLACK
           node.parent!.parent!.color = NodeColor.RED
           this.addStep(
@@ -155,7 +152,6 @@ export class RedBlackTree {
         const uncle = node.parent.parent?.left
 
         if (uncle && uncle.color === NodeColor.RED) {
-          // Case 1: Uncle is red
           node.parent.color = NodeColor.BLACK
           uncle.color = NodeColor.BLACK
           node.parent.parent!.color = NodeColor.RED
@@ -167,7 +163,6 @@ export class RedBlackTree {
           node = node.parent.parent!
         } else {
           if (node === node.parent.left) {
-            // Case 2: Node is left child
             node = node.parent
             this.rotateRight(node)
           }
@@ -203,29 +198,30 @@ export class RedBlackTree {
     let current = this.root
     let parent: TreeNode | null = null
 
-    // Find insertion point
     while (current) {
       parent = current
       if (value < current.value) {
-        current = current.left
+        current = current.left!
       } else if (value > current.value) {
-        current = current.right
+        current = current.right!
       } else {
-        // Value already exists
         return
       }
     }
 
-    newNode.parent = parent
-    if (value < parent!.value) {
-      parent!.left = newNode
+    if (!parent) {
+      this.root = newNode
     } else {
-      parent!.right = newNode
+      newNode.parent = parent
+      if (value < parent.value) {
+        parent.left = newNode
+      } else {
+        parent.right = newNode
+      }
     }
 
-    this.addStep("insert", `Inserido nó ${value} (vermelho) como filho de ${parent!.value}`, [newNode.id])
+    this.addStep("insert", `Inserido nó ${value} (vermelho)${parent ? ` como filho de ${parent.value}` : ' como raiz'}`, [newNode.id])
 
-    // Fix Red-Black Tree properties
     this.fixInsert(newNode)
   }
 
@@ -255,7 +251,6 @@ export class RedBlackTree {
       if (node === node.parent?.left) {
         let sibling = node.parent.right
         if (sibling && sibling.color === NodeColor.RED) {
-          // Case 1: Sibling is red
           sibling.color = NodeColor.BLACK
           node.parent.color = NodeColor.RED
           this.addStep("recolor", `Recoloração: irmão ${sibling.value} fica preto, pai ${node.parent.value} fica vermelho`, [sibling.id, node.parent.id])
@@ -266,13 +261,11 @@ export class RedBlackTree {
         if (sibling && 
             (!sibling.left || sibling.left.color === NodeColor.BLACK) &&
             (!sibling.right || sibling.right.color === NodeColor.BLACK)) {
-          // Case 2: Sibling and its children are black
           sibling.color = NodeColor.RED
           this.addStep("recolor", `Recoloração: irmão ${sibling.value} fica vermelho`, [sibling.id])
           node = node.parent
         } else {
           if (sibling && (!sibling.right || sibling.right.color === NodeColor.BLACK)) {
-            // Case 3: Sibling's right child is black
             if (sibling.left) sibling.left.color = NodeColor.BLACK
             sibling.color = NodeColor.RED
             this.addStep("recolor", `Recoloração: sobrinho esquerdo fica preto, irmão ${sibling.value} fica vermelho`, [sibling.left?.id || '', sibling.id])
@@ -292,7 +285,6 @@ export class RedBlackTree {
       } else {
         let sibling = node.parent?.left
         if (sibling && sibling.color === NodeColor.RED) {
-          // Case 1: Sibling is red
           sibling.color = NodeColor.BLACK
           if (node.parent) node.parent.color = NodeColor.RED
           this.addStep("recolor", `Recoloração: irmão ${sibling.value} fica preto, pai ${node.parent?.value} fica vermelho`, [sibling.id, node.parent?.id || ''])
@@ -303,13 +295,11 @@ export class RedBlackTree {
         if (sibling && 
             (!sibling.left || sibling.left.color === NodeColor.BLACK) &&
             (!sibling.right || sibling.right.color === NodeColor.BLACK)) {
-          // Case 2: Sibling and its children are black
           sibling.color = NodeColor.RED
           this.addStep("recolor", `Recoloração: irmão ${sibling.value} fica vermelho`, [sibling.id])
           node = node.parent
         } else {
           if (sibling && (!sibling.left || sibling.left.color === NodeColor.BLACK)) {
-            // Case 3: Sibling's left child is black
             if (sibling.right) sibling.right.color = NodeColor.BLACK
             sibling.color = NodeColor.RED
             this.addStep("recolor", `Recoloração: sobrinho direito fica preto, irmão ${sibling.value} fica vermelho`, [sibling.right?.id || '', sibling.id])
@@ -345,15 +335,12 @@ export class RedBlackTree {
     let originalColor = nodeToDelete.color
 
     if (!nodeToDelete.left) {
-      // Node has no left child
       nodeToFix = nodeToDelete.right
       this.transplant(nodeToDelete, nodeToDelete.right)
     } else if (!nodeToDelete.right) {
-      // Node has no right child
       nodeToFix = nodeToDelete.left
       this.transplant(nodeToDelete, nodeToDelete.left)
     } else {
-      // Node has both children
       const successor = this.findMin(nodeToDelete.right)
       originalColor = successor.color
       nodeToFix = successor.right
@@ -428,7 +415,6 @@ export class RedBlackTree {
     return values
   }
 
-  // Helper method to get tree at specific step
   getTreeAtStep(stepIndex: number): TreeNode | null {
     if (stepIndex < 0 || stepIndex >= this.steps.length) {
       return null
@@ -436,7 +422,6 @@ export class RedBlackTree {
     return this.steps[stepIndex].tree
   }
 
-  // Helper method to calculate node positions for visualization
   calculateNodePositions(node: TreeNode | null, x = 0, y = 0, spacing = 100): Map<string, { x: number; y: number }> {
     const positions = new Map<string, { x: number; y: number }>()
 

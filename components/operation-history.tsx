@@ -57,7 +57,7 @@ export function OperationHistory({ steps, currentStep, onGoToStep }: OperationHi
   return (
     <Card className="p-4">
       <Collapsible open={isOpen} onOpenChange={setIsOpen}>
-        <CollapsibleTrigger className="flex items-center justify-between w-full text-left">
+        <CollapsibleTrigger className="flex items-center justify-between w-full text-left cursor-pointer">
           <div className="flex items-center gap-2">
             <History className="w-4 h-4 text-primary" />
             <span className="font-semibold">Histórico de Operações</span>

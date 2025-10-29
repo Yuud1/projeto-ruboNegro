@@ -22,7 +22,6 @@ export function useSequenceStorage() {
   const [savedSequences, setSavedSequences] = useState<SavedSequence[]>([])
   const [isLoading, setIsLoading] = useState(true)
 
-  // Carregar sequências do localStorage
   const loadSequences = useCallback(() => {
     try {
       const stored = localStorage.getItem(STORAGE_KEY)
@@ -41,7 +40,6 @@ export function useSequenceStorage() {
     }
   }, [])
 
-  // Salvar sequências no localStorage
   const saveSequences = useCallback((sequences: SavedSequence[]) => {
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(sequences))
@@ -51,13 +49,11 @@ export function useSequenceStorage() {
     }
   }, [])
 
-  // Salvar uma nova sequência
   const saveSequence = useCallback((
     name: string, 
     steps: TreeStep[], 
     description?: string
   ): string => {
-    // Extrair apenas as operações de inserção e remoção
     const operations = steps
       .filter(step => step.type === 'insert' || step.type === 'delete')
       .map(step => {
@@ -85,7 +81,6 @@ export function useSequenceStorage() {
     return newSequence.id
   }, [savedSequences, saveSequences])
 
-  // Atualizar uma sequência existente
   const updateSequence = useCallback((
     id: string, 
     updates: Partial<Pick<SavedSequence, 'name' | 'description' | 'operations'>>
@@ -104,7 +99,6 @@ export function useSequenceStorage() {
     return true
   }, [savedSequences, saveSequences])
 
-  // Deletar uma sequência
   const deleteSequence = useCallback((id: string): boolean => {
     const updatedSequences = savedSequences.filter(seq => seq.id !== id)
     if (updatedSequences.length === savedSequences.length) return false
@@ -113,12 +107,10 @@ export function useSequenceStorage() {
     return true
   }, [savedSequences, saveSequences])
 
-  // Carregar uma sequência específica
   const loadSequence = useCallback((id: string): SavedSequence | null => {
     return savedSequences.find(seq => seq.id === id) || null
   }, [savedSequences])
 
-  // Duplicar uma sequência
   const duplicateSequence = useCallback((id: string, newName?: string): string | null => {
     const originalSequence = loadSequence(id)
     if (!originalSequence) return null
@@ -136,7 +128,6 @@ export function useSequenceStorage() {
     return duplicatedSequence.id
   }, [savedSequences, loadSequence, saveSequences])
 
-  // Exportar sequências
   const exportSequences = useCallback(() => {
     const dataStr = JSON.stringify(savedSequences, null, 2)
     const dataBlob = new Blob([dataStr], { type: 'application/json' })
@@ -151,7 +142,6 @@ export function useSequenceStorage() {
     URL.revokeObjectURL(url)
   }, [savedSequences])
 
-  // Importar sequências
   const importSequences = useCallback((file: File): Promise<boolean> => {
     return new Promise((resolve) => {
       const reader = new FileReader()
@@ -182,12 +172,10 @@ export function useSequenceStorage() {
     })
   }, [savedSequences, saveSequences])
 
-  // Limpar todas as sequências
   const clearAllSequences = useCallback(() => {
     saveSequences([])
   }, [saveSequences])
 
-  // Carregar sequências na inicialização
   useEffect(() => {
     loadSequences()
   }, [loadSequences])

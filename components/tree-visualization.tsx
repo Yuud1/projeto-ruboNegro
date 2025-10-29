@@ -3,7 +3,8 @@
 import { useMemo, useEffect, useState, useRef } from "react"
 import { TreeNode as TreeNodeComponent } from "./tree-node"
 import { TreeEdge } from "./tree-edge"
-import type { TreeNode } from "@/lib/red-black-tree"
+import { StepNavigator } from "./step-navigator"
+import type { TreeNode, TreeStep } from "@/lib/red-black-tree"
 import { Button } from "@/components/ui/button"
 import { ZoomIn, ZoomOut, RotateCcw, Move } from "lucide-react"
 
@@ -12,6 +13,16 @@ interface TreeVisualizationProps {
   nodePositions: Map<string, { x: number; y: number }>
   affectedNodes?: string[]
   currentStepType?: string
+  currentStep?: number
+  totalSteps?: number
+  canGoNext?: boolean
+  canGoPrevious?: boolean
+  onNextStep?: () => void
+  onPreviousStep?: () => void
+  onGoToStep?: (step: number) => void
+  onReset?: () => void
+  currentStepData?: TreeStep | null
+  onCenterView?: () => void
 }
 
 export function TreeVisualization({
@@ -19,6 +30,16 @@ export function TreeVisualization({
   nodePositions,
   affectedNodes = [],
   currentStepType,
+  currentStep = 0,
+  totalSteps = 0,
+  canGoNext = false,
+  canGoPrevious = false,
+  onNextStep = () => {},
+  onPreviousStep = () => {},
+  onGoToStep = () => {},
+  onReset = () => {},
+  currentStepData = null,
+  onCenterView,
 }: TreeVisualizationProps) {
   const [animatingNodes, setAnimatingNodes] = useState<Set<string>>(new Set())
   const [previousTree, setPreviousTree] = useState<TreeNode | null>(null)
@@ -40,6 +61,18 @@ export function TreeVisualization({
     setPreviousTree(tree)
   }, [tree])
 
+  useEffect(() => {
+    if (tree && nodePositions.size > 0) {
+      const timer = setTimeout(() => {
+        centerView()
+        if (onCenterView) {
+          onCenterView()
+        }
+      }, 100)
+      return () => clearTimeout(timer)
+    }
+  }, [tree, nodePositions, onCenterView])
+
   const handleZoomIn = () => {
     setZoom(prev => Math.min(prev * 1.2, 3))
   }
@@ -53,8 +86,45 @@ export function TreeVisualization({
     setPan({ x: 0, y: 0 })
   }
 
+  const centerView = () => {
+    if (!tree || nodePositions.size === 0) return
+
+    const bounds = Array.from(nodePositions.values()).reduce(
+      (acc, pos) => ({
+        minX: Math.min(acc.minX, pos.x),
+        maxX: Math.max(acc.maxX, pos.x),
+        minY: Math.min(acc.minY, pos.y),
+        maxY: Math.max(acc.maxY, pos.y),
+      }),
+      {
+        minX: Number.POSITIVE_INFINITY,
+        maxX: Number.NEGATIVE_INFINITY,
+        minY: Number.POSITIVE_INFINITY,
+        maxY: Number.NEGATIVE_INFINITY,
+      },
+    )
+
+    const centerX = (bounds.minX + bounds.maxX) / 2
+    const centerY = (bounds.minY + bounds.maxY) / 2
+    const width = bounds.maxX - bounds.minX
+    const height = bounds.maxY - bounds.minY
+
+    const containerWidth = 500
+    const containerHeight = 400
+    const margin = 100
+    
+    const zoomX = (containerWidth - margin) / width
+    const zoomY = (containerHeight - margin) / height
+    const newZoom = Math.min(zoomX, zoomY, 1)
+    const newPanX = (containerWidth / 2) - (centerX * newZoom)
+    const newPanY = (containerHeight / 2) - (centerY * newZoom)
+
+    setZoom(newZoom)
+    setPan({ x: newPanX, y: newPanY })
+  }
+
   const handleMouseDown = (e: React.MouseEvent) => {
-    if (e.button === 1 || (e.button === 0 && e.ctrlKey)) {
+    if (e.button === 0) {
       setIsPanning(true)
       setLastPanPoint({ x: e.clientX, y: e.clientY })
       e.preventDefault()
@@ -84,23 +154,6 @@ export function TreeVisualization({
     setZoom(prev => Math.max(0.1, Math.min(3, prev * delta)))
   }
 
-  useEffect(() => {
-    const svgElement = svgRef.current
-    if (svgElement) {
-      const handleWheelNonPassive = (e: WheelEvent) => {
-        e.preventDefault()
-        e.stopPropagation()
-        const delta = e.deltaY > 0 ? 0.9 : 1.1
-        setZoom(prev => Math.max(0.1, Math.min(3, prev * delta)))
-      }
-      
-      svgElement.addEventListener('wheel', handleWheelNonPassive, { passive: false })
-      
-      return () => {
-        svgElement.removeEventListener('wheel', handleWheelNonPassive)
-      }
-    }
-  }, [])
 
   const { nodes, edges, newNodes } = useMemo(() => {
     if (!tree) return { nodes: [], edges: [], newNodes: new Set<string>() }
@@ -196,8 +249,15 @@ export function TreeVisualization({
   }
 
   return (
-    <div className="flex items-center justify-center min-h-96 p-4">
-      <div className="relative overflow-hidden max-w-full max-h-[500px] border border-border rounded-lg bg-gradient-to-br from-card to-muted/10 shadow-lg">
+    <div className="flex flex-col h-full">
+      <div 
+        className={`relative overflow-hidden flex-1 bg-gradient-to-br from-card to-muted/10 ${isPanning ? 'cursor-grabbing' : 'cursor-grab'}`}
+        onMouseDown={handleMouseDown}
+        onMouseMove={handleMouseMove}
+        onMouseUp={handleMouseUp}
+        onMouseLeave={handleMouseUp}
+        onWheel={handleWheel}
+      >
         <div className="absolute top-2 right-2 z-10 flex flex-col gap-1">
           <Button size="sm" variant="outline" onClick={handleZoomIn}>
             <ZoomIn className="w-4 h-4" />
@@ -210,29 +270,16 @@ export function TreeVisualization({
           </Button>
         </div>
 
-        {isPanning && (
-          <div className="absolute top-2 left-2 z-10">
-            <div className="flex items-center gap-2 px-2 py-1 bg-primary text-primary-foreground rounded text-sm">
-              <Move className="w-4 h-4" />
-              Arrastando
-            </div>
-          </div>
-        )}
-
-        <svg 
-          ref={svgRef}
-          width={svgWidth} 
-          height={svgHeight} 
-          className="block cursor-grab active:cursor-grabbing"
-          onMouseDown={handleMouseDown}
-          onMouseMove={handleMouseMove}
-          onMouseUp={handleMouseUp}
-          onMouseLeave={handleMouseUp}
-          style={{
-            transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom})`,
-            transformOrigin: 'center center',
-          }}
-        >
+      <svg 
+        ref={svgRef}
+        width={svgWidth} 
+        height={svgHeight} 
+        className="block"
+        style={{
+          transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom})`,
+          transformOrigin: 'center center',
+        }}
+      >
           <defs>
             <linearGradient id="edgeGradient" x1="0%" y1="0%" x2="100%" y2="100%">
               <stop offset="0%" stopColor="rgb(107 114 128)" stopOpacity="0.8" />
@@ -289,6 +336,22 @@ export function TreeVisualization({
           })}
         </svg>
       </div>
+      
+      {totalSteps > 0 && (
+        <div className="p-4 *:bg-card">
+          <StepNavigator
+            currentStep={currentStep}
+            totalSteps={totalSteps}
+            canGoNext={canGoNext}
+            canGoPrevious={canGoPrevious}
+            onNextStep={onNextStep}
+            onPreviousStep={onPreviousStep}
+            onGoToStep={onGoToStep}
+            onReset={onReset}
+            currentStepData={currentStepData}
+          />
+        </div>
+      )}
     </div>
   )
 }

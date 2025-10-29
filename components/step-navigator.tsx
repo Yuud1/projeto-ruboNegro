@@ -96,14 +96,7 @@ export function StepNavigator({
   }
 
   return (
-    <Card className="p-6 space-y-4">
-      <div className="flex items-center justify-between">
-        <h3 className="font-semibold">Navegação de Passos</h3>
-        {currentStepData && (
-          <Badge className={getStepTypeColor(currentStepData.type)}>{getStepTypeLabel(currentStepData.type)}</Badge>
-        )}
-      </div>
-
+    <div className="space-y-3">
       <div className="space-y-2">
         <div className="flex items-center justify-between text-sm text-muted-foreground">
           <span>Passo {currentStep + 1}</span>
@@ -115,12 +108,12 @@ export function StepNavigator({
           max={totalSteps - 1}
           min={0}
           step={1}
-          className="w-full"
+          className="w-full cursor-pointer"
         />
       </div>
 
       <div className="flex items-center justify-center gap-2">
-        <Button variant="outline" size="sm" onClick={onReset} disabled={totalSteps <= 1} title="Resetar para o início">
+        <Button variant="outline" size="sm" onClick={onReset} disabled={totalSteps <= 1} title="Resetar para o início" className="cursor-pointer">
           <RotateCcw className="w-4 h-4" />
         </Button>
 
@@ -130,11 +123,12 @@ export function StepNavigator({
           onClick={() => onGoToStep(0)}
           disabled={currentStep === 0}
           title="Ir para o primeiro passo"
+          className="cursor-pointer"
         >
           <SkipBack className="w-4 h-4" />
         </Button>
 
-        <Button variant="outline" size="sm" onClick={onPreviousStep} disabled={!canGoPrevious} title="Passo anterior">
+        <Button variant="outline" size="sm" onClick={onPreviousStep} disabled={!canGoPrevious} title="Passo anterior" className="cursor-pointer">
           <ChevronLeft className="w-4 h-4" />
         </Button>
 
@@ -144,11 +138,12 @@ export function StepNavigator({
           onClick={handleAutoPlay}
           disabled={!canGoNext && !isAutoPlaying}
           title={isAutoPlaying ? "Pausar reprodução automática" : "Reprodução automática"}
+          className="cursor-pointer"
         >
           {isAutoPlaying ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
         </Button>
 
-        <Button variant="outline" size="sm" onClick={onNextStep} disabled={!canGoNext} title="Próximo passo">
+        <Button variant="outline" size="sm" onClick={onNextStep} disabled={!canGoNext} title="Próximo passo" className="cursor-pointer">
           <ChevronRight className="w-4 h-4" />
         </Button>
 
@@ -158,6 +153,7 @@ export function StepNavigator({
           onClick={() => onGoToStep(totalSteps - 1)}
           disabled={currentStep === totalSteps - 1}
           title="Ir para o último passo"
+          className="cursor-pointer"
         >
           <SkipForward className="w-4 h-4" />
         </Button>
@@ -175,16 +171,10 @@ export function StepNavigator({
             max={3000}
             min={500}
             step={250}
-            className="w-full"
+            className="w-full cursor-pointer"
           />
         </div>
       )}
-
-      {currentStepData && (
-        <div className="p-3 bg-muted rounded-lg">
-          <p className="text-sm font-medium text-foreground">{currentStepData.description}</p>
-        </div>
-      )}
-    </Card>
+    </div>
   )
 }

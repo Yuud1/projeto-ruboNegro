@@ -12,9 +12,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog"
 import { 
   Save, 
-  FolderOpen, 
-  Download, 
-  Upload, 
+  FolderOpen,
   Trash2, 
   Copy, 
   Edit, 
@@ -40,8 +38,6 @@ export function SequenceManager({ currentSteps, onLoadSequence }: SequenceManage
     deleteSequence,
     loadSequence,
     duplicateSequence,
-    exportSequences,
-    importSequences,
     clearAllSequences
   } = useSequenceStorage()
 
@@ -103,18 +99,6 @@ export function SequenceManager({ currentSteps, onLoadSequence }: SequenceManage
     deleteSequence(sequenceId)
   }
 
-  const handleImport = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0]
-    if (file) {
-      importSequences(file).then(success => {
-        if (success) {
-          alert("Sequências importadas com sucesso!")
-        } else {
-          alert("Erro ao importar sequências. Verifique o formato do arquivo.")
-        }
-      })
-    }
-  }
 
   const formatDate = (date: Date) => {
     return new Intl.DateTimeFormat('pt-BR', {
@@ -139,7 +123,7 @@ export function SequenceManager({ currentSteps, onLoadSequence }: SequenceManage
   return (
     <Card className="p-4">
       <Collapsible open={isOpen} onOpenChange={setIsOpen}>
-        <CollapsibleTrigger className="flex items-center justify-between w-full text-left">
+        <CollapsibleTrigger className="flex items-center justify-between w-full text-left cursor-pointer">
           <div className="flex items-center gap-2">
             <History className="w-4 h-4 text-primary" />
             <span className="font-semibold">Gerenciar Sequências</span>
@@ -151,10 +135,10 @@ export function SequenceManager({ currentSteps, onLoadSequence }: SequenceManage
         <CollapsibleContent className="mt-4">
           <div className="space-y-4">
             {/* Ações principais */}
-            <div className="grid grid-cols-2 gap-2">
+            <div className="flex gap-2">
               <Dialog open={isSaveDialogOpen} onOpenChange={setIsSaveDialogOpen}>
                 <DialogTrigger asChild>
-                  <Button size="sm" className="flex items-center justify-center gap-1 w-full">
+                  <Button size="sm" className="flex items-center justify-center gap-1 flex-1 cursor-pointer">
                     <Save className="w-3 h-3" />
                     Salvar Atual
                   </Button>
@@ -187,10 +171,10 @@ export function SequenceManager({ currentSteps, onLoadSequence }: SequenceManage
                       />
                     </div>
                     <div className="flex justify-end gap-2">
-                      <Button variant="outline" onClick={() => setIsSaveDialogOpen(false)}>
+                      <Button variant="outline" onClick={() => setIsSaveDialogOpen(false)} className="cursor-pointer">
                         Cancelar
                       </Button>
-                      <Button onClick={handleSave} disabled={!saveForm.name.trim()}>
+                      <Button onClick={handleSave} disabled={!saveForm.name.trim()} className="cursor-pointer">
                         Salvar
                       </Button>
                     </div>
@@ -198,30 +182,10 @@ export function SequenceManager({ currentSteps, onLoadSequence }: SequenceManage
                 </DialogContent>
               </Dialog>
 
-              <Button size="sm" variant="outline" onClick={exportSequences} className="flex items-center justify-center gap-1 w-full">
-                <Download className="w-3 h-3" />
-                Exportar
-              </Button>
-
-              <label className="cursor-pointer w-full">
-                <Button size="sm" variant="outline" asChild className="flex items-center justify-center gap-1 w-full">
-                  <span>
-                    <Upload className="w-3 h-3" />
-                    Importar
-                  </span>
-                </Button>
-                <input
-                  type="file"
-                  accept=".json"
-                  onChange={handleImport}
-                  className="hidden"
-                />
-              </label>
-
               {savedSequences.length > 0 && (
                 <AlertDialog>
                   <AlertDialogTrigger asChild>
-                    <Button size="sm" variant="destructive" className="flex items-center justify-center gap-1 w-full">
+                    <Button size="sm" variant="destructive" className="flex items-center justify-center gap-1 flex-1 cursor-pointer">
                       <Trash2 className="w-3 h-3" />
                       Limpar Tudo
                     </Button>
@@ -246,8 +210,8 @@ export function SequenceManager({ currentSteps, onLoadSequence }: SequenceManage
 
             {/* Lista de sequências salvas */}
             {savedSequences.length > 0 ? (
-              <ScrollArea className="h-64">
-                <div className="space-y-2 pr-4">
+              <ScrollArea className="h-64 [&>[data-radix-scroll-area-scrollbar]]:hidden">
+                <div className="space-y-2">
                   {savedSequences.map((sequence) => (
                     <div
                       key={sequence.id}
@@ -282,56 +246,60 @@ export function SequenceManager({ currentSteps, onLoadSequence }: SequenceManage
                         )}
                       </div>
 
-                      <div className="grid grid-cols-2 gap-1">
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => handleLoad(sequence.id)}
-                          className="text-xs h-7 w-full flex items-center justify-center"
-                        >
-                          <FolderOpen className="w-3 h-3 mr-1" />
-                          Carregar
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => handleEdit(sequence.id)}
-                          className="text-xs h-7 w-full flex items-center justify-center"
-                        >
-                          <Edit className="w-3 h-3 mr-1" />
-                          Editar
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => handleDuplicate(sequence.id)}
-                          className="text-xs h-7 w-full flex items-center justify-center"
-                        >
-                          <Copy className="w-3 h-3 mr-1" />
-                          Duplicar
-                        </Button>
-                        <AlertDialog>
-                          <AlertDialogTrigger asChild>
-                            <Button size="sm" variant="destructive" className="text-xs h-7 w-full flex items-center justify-center">
-                              <Trash2 className="w-3 h-3 mr-1" />
-                              Excluir
-                            </Button>
-                          </AlertDialogTrigger>
-                          <AlertDialogContent>
-                            <AlertDialogHeader>
-                              <AlertDialogTitle>Confirmar exclusão</AlertDialogTitle>
-                              <AlertDialogDescription>
-                                Tem certeza que deseja excluir a sequência "{sequence.name}"? Esta ação não pode ser desfeita.
-                              </AlertDialogDescription>
-                            </AlertDialogHeader>
-                            <AlertDialogFooter>
-                              <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                              <AlertDialogAction onClick={() => handleDelete(sequence.id)}>
+                      <div className="space-y-2">
+                        <div className="flex gap-2">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleEdit(sequence.id)}
+                            className="text-xs h-7 flex-1 flex items-center justify-center cursor-pointer"
+                          >
+                            <Edit className="w-3 h-3 mr-1" />
+                            Editar
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleDuplicate(sequence.id)}
+                            className="text-xs h-7 flex-1 flex items-center justify-center cursor-pointer"
+                          >
+                            <Copy className="w-3 h-3 mr-1" />
+                            Duplicar
+                          </Button>
+                        </div>
+                        <div className="flex gap-2">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleLoad(sequence.id)}
+                            className="text-xs h-7 flex-1 flex items-center justify-center cursor-pointer"
+                          >
+                            <FolderOpen className="w-3 h-3 mr-1" />
+                            Importar
+                          </Button>
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <Button size="sm" variant="destructive" className="text-xs h-7 flex-1 flex items-center justify-center cursor-pointer">
+                                <Trash2 className="w-3 h-3 mr-1" />
                                 Excluir
-                              </AlertDialogAction>
-                            </AlertDialogFooter>
-                          </AlertDialogContent>
-                        </AlertDialog>
+                              </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>Confirmar exclusão</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                  Tem certeza que deseja excluir a sequência "{sequence.name}"? Esta ação não pode ser desfeita.
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel className="cursor-pointer">Cancelar</AlertDialogCancel>
+                                <AlertDialogAction onClick={() => handleDelete(sequence.id)} className="cursor-pointer">
+                                  Excluir
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
+                        </div>
                       </div>
                     </div>
                   ))}
@@ -378,10 +346,10 @@ export function SequenceManager({ currentSteps, onLoadSequence }: SequenceManage
               />
             </div>
             <div className="flex justify-end gap-2">
-              <Button variant="outline" onClick={() => setIsEditDialogOpen(false)}>
+              <Button variant="outline" onClick={() => setIsEditDialogOpen(false)} className="cursor-pointer">
                 Cancelar
               </Button>
-              <Button onClick={handleUpdate} disabled={!editForm.name.trim()}>
+              <Button onClick={handleUpdate} disabled={!editForm.name.trim()} className="cursor-pointer">
                 Salvar Alterações
               </Button>
             </div>
