@@ -264,13 +264,13 @@ export function TreeVisualization({
         onWheel={handleWheel}
       >
         <div className="absolute top-2 right-2 z-10 flex flex-col gap-1">
-          <Button size="sm" variant="outline" onClick={handleZoomIn}>
+          <Button size="sm" variant="outline" onClick={handleZoomIn} className="cursor-pointer">
             <ZoomIn className="w-4 h-4" />
           </Button>
-          <Button size="sm" variant="outline" onClick={handleZoomOut}>
+          <Button size="sm" variant="outline" onClick={handleZoomOut} className="cursor-pointer">
             <ZoomOut className="w-4 h-4" />
           </Button>
-          <Button size="sm" variant="outline" onClick={handleResetView}>
+          <Button size="sm" variant="outline" onClick={handleResetView} className="cursor-pointer">
             <RotateCcw className="w-4 h-4" />
           </Button>
         </div>

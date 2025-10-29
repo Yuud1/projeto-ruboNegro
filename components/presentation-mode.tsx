@@ -304,11 +304,11 @@ export function PresentationMode({
         <Card className="p-4 shadow-lg">
           <div className="flex items-center justify-between gap-6">
             <div className="flex items-center gap-2">
-              <Button variant="outline" size="sm" onClick={handleGoToStart} disabled={currentStep === 0}>
+              <Button variant="outline" size="sm" onClick={handleGoToStart} disabled={currentStep === 0} className="cursor-pointer">
                 <SkipBack className="w-4 h-4" />
               </Button>
               
-              <Button variant="outline" size="sm" onClick={previousStep} disabled={!canGoPrevious}>
+              <Button variant="outline" size="sm" onClick={previousStep} disabled={!canGoPrevious} className="cursor-pointer">
                 <SkipBack className="w-4 h-4" />
               </Button>
               
@@ -317,15 +317,16 @@ export function PresentationMode({
                 size="sm" 
                 onClick={handlePlayPause}
                 disabled={!canGoNext && !isPlaying}
+                className="cursor-pointer"
               >
                 {isPlaying ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
               </Button>
               
-              <Button variant="outline" size="sm" onClick={nextStep} disabled={!canGoNext}>
+              <Button variant="outline" size="sm" onClick={nextStep} disabled={!canGoNext} className="cursor-pointer">
                 <SkipForward className="w-4 h-4" />
               </Button>
               
-              <Button variant="outline" size="sm" onClick={handleGoToEnd} disabled={currentStep === totalSteps - 1}>
+              <Button variant="outline" size="sm" onClick={handleGoToEnd} disabled={currentStep === totalSteps - 1} className="cursor-pointer">
                 <SkipForward className="w-4 h-4" />
               </Button>
             </div>
@@ -338,7 +339,7 @@ export function PresentationMode({
                 max={3000}
                 min={200}
                 step={200}
-                className="flex-1"
+                className="flex-1 cursor-pointer"
               />
               <span className="text-sm text-muted-foreground w-12">
                 {playbackSpeed}ms
@@ -346,19 +347,19 @@ export function PresentationMode({
             </div>
 
             <div className="flex items-center gap-2">
-              <Button variant="outline" size="sm" onClick={handleReset}>
+              <Button variant="outline" size="sm" onClick={handleReset} className="cursor-pointer">
                 <RotateCcw className="w-4 h-4" />
               </Button>
               
-              <Button variant="outline" size="sm" onClick={() => setShowStats(!showStats)}>
+              <Button variant="outline" size="sm" onClick={() => setShowStats(!showStats)} className="cursor-pointer">
                 {showStats ? "Ocultar Stats" : "Mostrar Stats"}
               </Button>
               
-              <Button variant="outline" size="sm" onClick={toggleFullscreen}>
+              <Button variant="outline" size="sm" onClick={toggleFullscreen} className="cursor-pointer">
                 {isFullscreen ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
               </Button>
               
-              <Button variant="outline" size="sm" onClick={onExit}>
+              <Button variant="outline" size="sm" onClick={onExit} className="cursor-pointer">
                 <X className="w-4 h-4" />
               </Button>
             </div>

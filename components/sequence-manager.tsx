@@ -46,7 +46,7 @@ export function SequenceManager({ currentSteps, onLoadSequence }: SequenceManage
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
   const [editingSequence, setEditingSequence] = useState<string | null>(null)
   const [saveForm, setSaveForm] = useState({ name: "", description: "" })
-  const [editForm, setEditForm] = useState({ name: "", description: "" })
+  const [editForm, setEditForm] = useState({ name: "", description: "", numbers: "" })
 
   const handleSave = () => {
     if (saveForm.name.trim()) {
@@ -59,10 +59,15 @@ export function SequenceManager({ currentSteps, onLoadSequence }: SequenceManage
   const handleEdit = (sequenceId: string) => {
     const sequence = loadSequence(sequenceId)
     if (sequence) {
+      const numbers = sequence.operations
+        .map(op => op.value)
+        .join(", ")
+      
       setEditingSequence(sequenceId)
       setEditForm({ 
         name: sequence.name, 
-        description: sequence.description || "" 
+        description: sequence.description || "",
+        numbers: numbers
       })
       setIsEditDialogOpen(true)
     }
@@ -70,12 +75,28 @@ export function SequenceManager({ currentSteps, onLoadSequence }: SequenceManage
 
   const handleUpdate = () => {
     if (editingSequence && editForm.name.trim()) {
+      // Processar os números inseridos
+      const numbers = editForm.numbers
+        .split(/[,\s]+/)
+        .map(n => n.trim())
+        .filter(n => n !== "")
+        .map(n => Number.parseInt(n))
+        .filter(n => !isNaN(n))
+      
+      // Criar novas operações baseadas nos números
+      const newOperations = numbers.map(value => ({
+        type: 'insert' as const,
+        value,
+        description: `Inserido nó ${value}`
+      }))
+      
       updateSequence(editingSequence, {
         name: editForm.name.trim(),
-        description: editForm.description.trim() || undefined
+        description: editForm.description.trim() || undefined,
+        operations: newOperations
       })
       setEditingSequence(null)
-      setEditForm({ name: "", description: "" })
+      setEditForm({ name: "", description: "", numbers: "" })
       setIsEditDialogOpen(false)
     }
   }
@@ -139,7 +160,7 @@ export function SequenceManager({ currentSteps, onLoadSequence }: SequenceManage
                 <DialogTrigger asChild>
                   <Button size="sm" className="flex items-center justify-center gap-1 flex-1 cursor-pointer">
                     <Save className="w-3 h-3" />
-                    Salvar Atual
+                    Salvar
                   </Button>
                 </DialogTrigger>
                 <DialogContent>
@@ -181,30 +202,6 @@ export function SequenceManager({ currentSteps, onLoadSequence }: SequenceManage
                 </DialogContent>
               </Dialog>
 
-              {savedSequences.length > 0 && (
-                <AlertDialog>
-                  <AlertDialogTrigger asChild>
-                    <Button size="sm" variant="destructive" className="flex items-center justify-center gap-1 flex-1 cursor-pointer">
-                      <Trash2 className="w-3 h-3" />
-                      Limpar Tudo
-                    </Button>
-                  </AlertDialogTrigger>
-                  <AlertDialogContent>
-                    <AlertDialogHeader>
-                      <AlertDialogTitle>Confirmar exclusão</AlertDialogTitle>
-                      <AlertDialogDescription>
-                        Tem certeza que deseja excluir todas as sequências salvas? Esta ação não pode ser desfeita.
-                      </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                      <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                      <AlertDialogAction onClick={clearAllSequences}>
-                        Excluir Tudo
-                      </AlertDialogAction>
-                    </AlertDialogFooter>
-                  </AlertDialogContent>
-                </AlertDialog>
-              )}
             </div>
 
             {savedSequences.length > 0 ? (
@@ -319,7 +316,7 @@ export function SequenceManager({ currentSteps, onLoadSequence }: SequenceManage
           <DialogHeader>
             <DialogTitle>Editar Sequência</DialogTitle>
             <p className="text-sm text-muted-foreground">
-              Edite o nome e descrição da sequência selecionada.
+              Edite o nome, sequência de números e descrição da sequência selecionada.
             </p>
           </DialogHeader>
           <div className="space-y-4">
@@ -331,6 +328,18 @@ export function SequenceManager({ currentSteps, onLoadSequence }: SequenceManage
                 placeholder="Ex: Inserção de números pares"
                 className="mt-1"
               />
+            </div>
+            <div>
+              <label className="text-sm font-medium">Sequência de números</label>
+              <Input
+                value={editForm.numbers}
+                onChange={(e) => setEditForm(prev => ({ ...prev, numbers: e.target.value }))}
+                placeholder="Ex: 10, 20, 30, 40"
+                className="mt-1"
+              />
+              <p className="text-xs text-muted-foreground mt-1">
+                Separe os números por vírgula ou espaço
+              </p>
             </div>
             <div>
               <label className="text-sm font-medium">Descrição (opcional)</label>
