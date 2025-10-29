@@ -8,6 +8,7 @@ import { Slider } from "@/components/ui/slider"
 import { useRedBlackTree } from "@/hooks/use-red-black-tree"
 import { TreeVisualization } from "./tree-visualization"
 import { TreeStatistics } from "./tree-statistics"
+import { PseudocodeDisplay } from "./pseudocode-display"
 import { 
   Play, 
   Pause, 
@@ -17,7 +18,8 @@ import {
   Minimize2,
   RotateCcw,
   Volume2,
-  VolumeX
+  VolumeX,
+  X
 } from "lucide-react"
 
 interface PresentationModeProps {
@@ -115,6 +117,115 @@ export function PresentationMode({
 
   const currentStepData = steps[currentStep] || null
 
+  const getAlgorithmForStep = (stepType: string) => {
+    switch (stepType) {
+      case "insert":
+        return "insert"
+      case "recolor":
+      case "rotate-left":
+      case "rotate-right":
+        return "insert-fixup"
+      case "delete":
+        return "delete"
+      case "delete-fixup":
+        return "delete-fixup"
+      default:
+        return "insert"
+    }
+  }
+
+  const getActiveLinesForStep = (stepType: string, stepData: any) => {
+    switch (stepType) {
+      case "insert":
+        return [14, 15, 16, 17]
+      case "recolor":
+        return [4, 5, 6, 7, 8]
+      case "rotate-left":
+        return [10, 11, 12]
+      case "rotate-right":
+        return [13, 14, 15]
+      case "delete":
+        if (stepData?.hasLeftChild === false && stepData?.hasRightChild === false) {
+          return [3, 4, 5]
+        } else if (stepData?.hasLeftChild === false || stepData?.hasRightChild === false) {
+          return [6, 7, 8]
+        } else {
+          return [9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22]
+        }
+      case "delete-fixup":
+        return [1, 2, 3, 4, 5, 6, 7, 8]
+      default:
+        return []
+    }
+  }
+
+  const getExecutedLinesForStep = (stepType: string, stepData: any) => {
+    switch (stepType) {
+      case "insert":
+        return [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13]
+      case "recolor":
+        return [1, 2, 3]
+      case "rotate-left":
+        return [1, 2, 3, 9]
+      case "rotate-right":
+        return [1, 2, 3, 9, 10, 11, 12]
+      case "delete":
+        return [1, 2]
+      case "delete-fixup":
+        return []
+      default:
+        return []
+    }
+  }
+
+  const getConditionsForStep = (stepType: string, stepData: any) => {
+    const conditions: { [key: number]: boolean } = {}
+    
+    switch (stepType) {
+      case "insert":
+        conditions[3] = true
+        conditions[5] = stepData?.direction === "left"
+        conditions[9] = stepData?.isRoot || false
+        conditions[11] = stepData?.direction === "left"
+        break
+      case "recolor":
+        conditions[1] = true
+        conditions[2] = stepData?.parentSide === "left"
+        conditions[4] = true
+        break
+      case "rotate-left":
+        conditions[1] = true
+        conditions[2] = stepData?.parentSide === "left"
+        conditions[4] = false
+        conditions[10] = true
+        break
+      case "rotate-right":
+        conditions[1] = true
+        conditions[2] = stepData?.parentSide === "left"
+        conditions[4] = false
+        conditions[10] = false
+        break
+      case "delete":
+        conditions[3] = stepData?.hasLeftChild === false
+        conditions[6] = stepData?.hasRightChild === false
+        conditions[13] = stepData?.isSuccessorChild || false
+        conditions[23] = stepData?.originalColor === "BLACK"
+        break
+      case "delete-fixup":
+        conditions[1] = true
+        conditions[2] = stepData?.isLeftChild || false
+        conditions[4] = stepData?.siblingColor === "RED"
+        conditions[9] = stepData?.bothChildrenBlack || false
+        break
+    }
+    
+    return conditions
+  }
+
+  const getCommentsForStep = (stepType: string, stepData: any) => {
+    return {}
+  }
+
   const getStepTypeColor = (type: string) => {
     switch (type) {
       case "insert":
@@ -151,34 +262,8 @@ export function PresentationMode({
   }
 
   return (
-    <div className={`fixed inset-0 z-50 bg-background ${isFullscreen ? 'p-0' : 'p-4'}`}>
-      <div className="flex items-center justify-between mb-4 p-4 bg-card border-b">
-        <div className="flex items-center gap-4">
-          <h1 className="text-2xl font-bold">Modo Apresentação</h1>
-          <Badge variant="outline">
-            Passo {currentStep + 1} de {totalSteps}
-          </Badge>
-          {currentStepData && (
-            <Badge className={getStepTypeColor(currentStepData.type)}>
-              {getStepTypeLabel(currentStepData.type)}
-            </Badge>
-          )}
-        </div>
-
-        <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" onClick={() => setShowStats(!showStats)}>
-            {showStats ? "Ocultar Stats" : "Mostrar Stats"}
-          </Button>
-          <Button variant="outline" size="sm" onClick={toggleFullscreen}>
-            {isFullscreen ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
-          </Button>
-          <Button variant="outline" size="sm" onClick={onExit}>
-            Sair
-          </Button>
-        </div>
-      </div>
-
-      <div className="flex h-[calc(100vh-120px)] gap-4">
+    <div className={`fixed inset-0 z-50 bg-background ${isFullscreen ? 'p-4' : 'p-4'}`}>
+      <div className="flex h-[calc(100vh-140px)] gap-4">
         <div className="flex-1">
           <Card className="h-full p-6">
             <TreeVisualization
@@ -191,24 +276,33 @@ export function PresentationMode({
         </div>
 
         {showStats && (
-          <div className="w-80 space-y-4">
-            <TreeStatistics tree={tree} />
-
-            {currentStepData && (
-              <Card className="p-4">
-                <h3 className="font-semibold mb-2">Descrição do Passo</h3>
-                <p className="text-sm text-muted-foreground">
-                  {currentStepData.description}
-                </p>
-              </Card>
+          <div className="w-96 space-y-4">
+            {currentStepData ? (
+              <PseudocodeDisplay
+                algorithm={getAlgorithmForStep(currentStepData.type) as any}
+                activeLines={getActiveLinesForStep(currentStepData.type, currentStepData)}
+                executedLines={getExecutedLinesForStep(currentStepData.type, currentStepData)}
+                conditions={getConditionsForStep(currentStepData.type, currentStepData)}
+                comments={getCommentsForStep(currentStepData.type, currentStepData)}
+                showRotationAlgorithms={currentStepData.type === 'rotate-left' || currentStepData.type === 'rotate-right'}
+              />
+            ) : (
+              <PseudocodeDisplay
+                algorithm="insert"
+                activeLines={[]}
+                executedLines={[]}
+                conditions={{}}
+                comments={{}}
+                showRotationAlgorithms={false}
+              />
             )}
           </div>
         )}
       </div>
 
-      <div className="fixed bottom-4 left-1/2 transform -translate-x-1/2">
+      <div className="fixed bottom-4 left-1/2 transform -translate-x-1/2 w-[90%] max-w-4xl">
         <Card className="p-4 shadow-lg">
-          <div className="flex items-center gap-4">
+          <div className="flex items-center justify-between gap-6">
             <div className="flex items-center gap-2">
               <Button variant="outline" size="sm" onClick={handleGoToStart} disabled={currentStep === 0}>
                 <SkipBack className="w-4 h-4" />
@@ -236,7 +330,7 @@ export function PresentationMode({
               </Button>
             </div>
 
-            <div className="flex items-center gap-2 min-w-[200px]">
+            <div className="flex items-center gap-2 min-w-[300px]">
               <span className="text-sm text-muted-foreground">Velocidade:</span>
               <Slider
                 value={[playbackSpeed]}
@@ -251,9 +345,23 @@ export function PresentationMode({
               </span>
             </div>
 
-            <Button variant="outline" size="sm" onClick={handleReset}>
-              <RotateCcw className="w-4 h-4" />
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button variant="outline" size="sm" onClick={handleReset}>
+                <RotateCcw className="w-4 h-4" />
+              </Button>
+              
+              <Button variant="outline" size="sm" onClick={() => setShowStats(!showStats)}>
+                {showStats ? "Ocultar Stats" : "Mostrar Stats"}
+              </Button>
+              
+              <Button variant="outline" size="sm" onClick={toggleFullscreen}>
+                {isFullscreen ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
+              </Button>
+              
+              <Button variant="outline" size="sm" onClick={onExit}>
+                <X className="w-4 h-4" />
+              </Button>
+            </div>
           </div>
         </Card>
       </div>
