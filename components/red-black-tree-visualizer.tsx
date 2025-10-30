@@ -160,7 +160,8 @@ export function RedBlackTreeVisualizer() {
               <div className="flex gap-4">
                 <Card className="p-4 card-professional flex-1">
                   <div className="space-y-4">
-                    <div className="flex flex-col sm:flex-row gap-4">
+                    <div className="flex flex-col gap-3 lg:flex-row lg:gap-4">
+                      {/* Linha 1 (sempre): input + inserir + remover */}
                       <div className="flex gap-2 flex-1">
                         <Input
                           type="text"
@@ -188,20 +189,42 @@ export function RedBlackTreeVisualizer() {
                           Remover
                         </Button>
                       </div>
-                      
-                      <Button variant="outline" onClick={handleReset} className="btn-professional btn-outline-professional cursor-pointer">
-                        <RotateCcw className="w-4 h-4 mr-2" />
-                        Resetar
-                      </Button>
 
-                      <Button 
-                        variant="outline" 
-                        onClick={() => setShowPresentation(true)}
-                        className="btn-professional btn-outline-professional cursor-pointer"
-                      >
-                        <Presentation className="w-4 h-4 mr-2" />
-                        Apresentação
-                      </Button>
+                      {/* Linha 2 (somente mobile): Resetar + Apresentação ocupando 100% (50% cada) */}
+                      <div className="grid grid-cols-2 gap-2 lg:hidden">
+                        <Button 
+                          variant="outline" 
+                          onClick={handleReset} 
+                          className="w-full btn-professional btn-outline-professional cursor-pointer"
+                        >
+                          <RotateCcw className="w-4 h-4 mr-2" />
+                          Resetar
+                        </Button>
+                        <Button 
+                          variant="outline" 
+                          onClick={() => setShowPresentation(true)}
+                          className="w-full btn-professional btn-outline-professional cursor-pointer"
+                        >
+                          <Presentation className="w-4 h-4 mr-2" />
+                          Apresentação
+                        </Button>
+                      </div>
+
+                      {/* Linha direita (desktop): Resetar + Apresentação */}
+                      <div className="hidden lg:flex gap-2">
+                        <Button variant="outline" onClick={handleReset} className="btn-professional btn-outline-professional cursor-pointer">
+                          <RotateCcw className="w-4 h-4 mr-2" />
+                          Resetar
+                        </Button>
+                        <Button 
+                          variant="outline" 
+                          onClick={() => setShowPresentation(true)}
+                          className="btn-professional btn-outline-professional cursor-pointer"
+                        >
+                          <Presentation className="w-4 h-4 mr-2" />
+                          Apresentação
+                        </Button>
+                      </div>
                     </div>
                   </div>
                 </Card>
@@ -259,8 +282,8 @@ export function RedBlackTreeVisualizer() {
                   currentSteps={steps} 
                   onLoadSequence={loadSequence} 
                 />
-                <TreeStatistics tree={currentTree} />
                 <OperationHistory steps={steps} currentStep={currentStep} onGoToStep={goToStep} />
+                <TreeStatistics tree={currentTree} />
               </div>
             )}
 
@@ -270,8 +293,8 @@ export function RedBlackTreeVisualizer() {
                 currentSteps={steps} 
                 onLoadSequence={loadSequence} 
               />
-              <TreeStatistics tree={currentTree} />
               <OperationHistory steps={steps} currentStep={currentStep} onGoToStep={goToStep} />
+              <TreeStatistics tree={currentTree} />
             </div>
           </div>
         )}
