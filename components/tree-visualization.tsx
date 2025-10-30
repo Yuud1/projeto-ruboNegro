@@ -48,7 +48,9 @@ export function TreeVisualization({
   const [pan, setPan] = useState({ x: 0, y: 0 })
   const [isPanning, setIsPanning] = useState(false)
   const [lastPanPoint, setLastPanPoint] = useState({ x: 0, y: 0 })
+  const [autoCenter, setAutoCenter] = useState(true)
   const svgRef = useRef<SVGSVGElement>(null)
+  const containerRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     if (affectedNodes.length > 0 && currentStepType) {
@@ -67,28 +69,31 @@ export function TreeVisualization({
   }, [tree])
 
   useEffect(() => {
-    if (tree && nodePositions.size > 0) {
-      const timer = setTimeout(() => {
-        centerView()
-        if (onCenterView) {
-          onCenterView()
-        }
-      }, 100)
-      return () => clearTimeout(timer)
-    }
-  }, [tree, nodePositions, onCenterView])
+    if (!tree || nodePositions.size === 0) return
+    if (!autoCenter) return
+    const timer = setTimeout(() => {
+      centerView()
+      if (onCenterView) onCenterView()
+    }, 100)
+    return () => clearTimeout(timer)
+  }, [tree, nodePositions, onCenterView, autoCenter])
 
   const handleZoomIn = () => {
+    setAutoCenter(false)
     setZoom(prev => Math.min(prev * 1.2, 3))
   }
 
   const handleZoomOut = () => {
+    setAutoCenter(false)
     setZoom(prev => Math.max(prev / 1.2, 0.1))
   }
 
   const handleResetView = () => {
     setZoom(1)
     setPan({ x: 0, y: 0 })
+    setAutoCenter(true)
+    // recentra imediatamente após reset
+    setTimeout(() => centerView(), 0)
   }
 
   const centerView = () => {
@@ -114,8 +119,8 @@ export function TreeVisualization({
     const width = bounds.maxX - bounds.minX
     const height = bounds.maxY - bounds.minY
 
-    const containerWidth = 500
-    const containerHeight = 400
+    const containerWidth = containerRef.current?.clientWidth ?? 800
+    const containerHeight = containerRef.current?.clientHeight ?? 500
     const margin = 100
     
     const zoomX = (containerWidth - margin) / width
@@ -132,6 +137,7 @@ export function TreeVisualization({
     if (e.button === 0) {
       setIsPanning(true)
       setLastPanPoint({ x: e.clientX, y: e.clientY })
+      setAutoCenter(false)
       e.preventDefault()
     }
   }
@@ -155,6 +161,7 @@ export function TreeVisualization({
   const handleWheel = (e: React.WheelEvent) => {
     e.preventDefault()
     e.stopPropagation()
+    setAutoCenter(false)
     const delta = e.deltaY > 0 ? 0.9 : 1.1
     setZoom(prev => Math.max(0.1, Math.min(3, prev * delta)))
   }
@@ -254,8 +261,9 @@ export function TreeVisualization({
   }
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-[60vh] min-h-[380px]">
       <div 
+        ref={containerRef}
         className={`relative overflow-hidden flex-1 bg-gradient-to-br from-card to-muted/10 ${isPanning ? 'cursor-grabbing' : 'cursor-grab'}`}
         onMouseDown={handleMouseDown}
         onMouseMove={handleMouseMove}
@@ -277,8 +285,10 @@ export function TreeVisualization({
 
       <svg 
         ref={svgRef}
-        width={svgWidth} 
-        height={svgHeight} 
+        width="100%"
+        height="100%"
+        viewBox={`0 0 ${svgWidth} ${svgHeight}`}
+        preserveAspectRatio="xMidYMid meet"
         className="block"
         style={{
           transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom})`,

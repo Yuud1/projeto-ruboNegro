@@ -148,7 +148,7 @@ export function SequenceManager({ currentSteps, onLoadSequence }: SequenceManage
           <div className="flex items-center gap-2">
             <History className="w-4 h-4 text-primary" />
             <span className="font-semibold">Gerenciar Sequências</span>
-            <Badge variant="outline">{savedSequences.length} salvas</Badge>
+            <Badge variant="outline">{savedSequences.length}</Badge>
           </div>
           <ChevronDown className={`w-4 h-4 transition-transform ${isOpen ? "rotate-180" : ""}`} />
         </CollapsibleTrigger>

@@ -70,8 +70,8 @@ export function TreeNode({ node, x, y, isHighlighted = false, animationType = nu
         cy={y}
         r={nodeRadius}
         fill={isRed ? "rgb(239 68 68)" : "rgb(55 65 81)"}
-        stroke={isHighlighted ? "rgb(59 130 246)" : "rgb(156 163 175)"}
-        strokeWidth={isHighlighted ? 3 : 1}
+        stroke="rgb(156 163 175)"
+        strokeWidth={1}
         className="transition-all duration-500 ease-in-out"
         style={{
           filter: isAnimating ? "drop-shadow(0 0 8px rgba(59, 130, 246, 0.5))" : "none",

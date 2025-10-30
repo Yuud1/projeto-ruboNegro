@@ -117,18 +117,17 @@ export function PresentationMode({
 
   const currentStepData = steps[currentStep] || null
 
-  const getAlgorithmForStep = (stepType: string) => {
+  const getAlgorithmForStep = (stepType: string, stepData: any) => {
+    const rootOp = stepData?.meta?.rootOp
     switch (stepType) {
       case "insert":
         return "insert"
       case "recolor":
       case "rotate-left":
       case "rotate-right":
-        return "insert-fixup"
+        return rootOp === 'delete' ? "delete-fixup" : "insert-fixup"
       case "delete":
         return "delete"
-      case "delete-fixup":
-        return "delete-fixup"
       default:
         return "insert"
     }
@@ -137,12 +136,36 @@ export function PresentationMode({
   const getActiveLinesForStep = (stepType: string, stepData: any) => {
     switch (stepType) {
       case "insert":
-        return [14, 15, 16, 17]
+        return [16, 17, 18, 19]
       case "recolor":
+        if (stepData?.meta?.rootOp === 'delete') {
+          // delete-fixup casos por ramo
+          const left = stepData?.meta?.isLeftChild === true
+          if (left) {
+            if (stepData?.meta?.siblingColor === 'RED') return [4,5,6,7,8]
+            if (stepData?.meta?.bothChildrenBlack) return [9,10,11]
+            if (stepData?.meta?.rightChildBlack) return [13,14,15,16,17]
+            return [18,19,20,21,22]
+          } else {
+            if (stepData?.meta?.siblingColor === 'RED') return [25,26,27,28,29]
+            if (stepData?.meta?.bothChildrenBlack) return [30,31,32]
+            if (stepData?.meta?.leftChildBlack) return [34,35,36,37,38]
+            return [39,40,41,42,43]
+          }
+        }
         return [4, 5, 6, 7, 8]
       case "rotate-left":
+        if (stepData?.meta?.rootOp === 'delete') {
+          // rotações em delete-fixup são finais dos casos
+          const left = stepData?.meta?.isLeftChild === true
+          return left ? [21] : [42]
+        }
         return [10, 11, 12]
       case "rotate-right":
+        if (stepData?.meta?.rootOp === 'delete') {
+          const left = stepData?.meta?.isLeftChild === true
+          return left ? [16] : [28]
+        }
         return [13, 14, 15]
       case "delete":
         if (stepData?.hasLeftChild === false && stepData?.hasRightChild === false) {
@@ -152,8 +175,6 @@ export function PresentationMode({
         } else {
           return [9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22]
         }
-      case "delete-fixup":
-        return [1, 2, 3, 4, 5, 6, 7, 8]
       default:
         return []
     }
@@ -162,7 +183,7 @@ export function PresentationMode({
   const getExecutedLinesForStep = (stepType: string, stepData: any) => {
     switch (stepType) {
       case "insert":
-        return [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13]
+        return [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]
       case "recolor":
         return [1, 2, 3]
       case "rotate-left":
@@ -171,8 +192,6 @@ export function PresentationMode({
         return [1, 2, 3, 9, 10, 11, 12]
       case "delete":
         return [1, 2]
-      case "delete-fixup":
-        return []
       default:
         return []
     }
@@ -208,15 +227,12 @@ export function PresentationMode({
       case "delete":
         conditions[3] = stepData?.hasLeftChild === false
         conditions[6] = stepData?.hasRightChild === false
-        conditions[13] = stepData?.isSuccessorChild || false
-        conditions[23] = stepData?.originalColor === "BLACK"
+        // Linha 12: if y != z.right (true quando o sucessor NÃO é filho direto)
+        conditions[12] = !(stepData?.isSuccessorChild || false)
+        // Linha 21: if y-original-color == BLACK
+        conditions[21] = stepData?.originalColor === "BLACK"
         break
-      case "delete-fixup":
-        conditions[1] = true
-        conditions[2] = stepData?.isLeftChild || false
-        conditions[4] = stepData?.siblingColor === "RED"
-        conditions[9] = stepData?.bothChildrenBlack || false
-        break
+      // delete-fixup condições são mostradas dentro de recolor/rotate via meta
     }
     
     return conditions
@@ -279,7 +295,7 @@ export function PresentationMode({
           <div className="w-96 space-y-4">
             {currentStepData ? (
               <PseudocodeDisplay
-                algorithm={getAlgorithmForStep(currentStepData.type) as any}
+                algorithm={getAlgorithmForStep(currentStepData.type, currentStepData) as any}
                 activeLines={getActiveLinesForStep(currentStepData.type, currentStepData)}
                 executedLines={getExecutedLinesForStep(currentStepData.type, currentStepData)}
                 conditions={getConditionsForStep(currentStepData.type, currentStepData)}

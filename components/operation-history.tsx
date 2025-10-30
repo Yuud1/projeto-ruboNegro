@@ -60,8 +60,8 @@ export function OperationHistory({ steps, currentStep, onGoToStep }: OperationHi
         <CollapsibleTrigger className="flex items-center justify-between w-full text-left cursor-pointer">
           <div className="flex items-center gap-2">
             <History className="w-4 h-4 text-primary" />
-            <span className="font-semibold">Histórico de Operações</span>
-            <Badge variant="outline">{steps.length} operações</Badge>
+            <span className="font-semibold">Histórico</span>
+            <Badge variant="outline">{steps.length}</Badge>
           </div>
           <ChevronDown className={`w-4 h-4 transition-transform ${isOpen ? "rotate-180" : ""}`} />
         </CollapsibleTrigger>
@@ -69,12 +69,12 @@ export function OperationHistory({ steps, currentStep, onGoToStep }: OperationHi
         <CollapsibleContent className="mt-3">
           <div className="space-y-4">
 
-             <ScrollArea className="h-64">
-               <div className="space-y-2 pr-4 pb-2">
+             <ScrollArea className="h-64 [&>[data-radix-scroll-area-scrollbar]]:hidden">
+               <div className="space-y-2 pb-2 grid grid-cols-1">
                  {steps.map((step, index) => (
                    <div
                      key={step.id}
-                     className={`p-2 rounded-md cursor-pointer transition-colors border ${
+                     className={`w-full p-2 rounded-md cursor-pointer transition-colors border ${
                        index === currentStep
                          ? "bg-blue-50 border-blue-300 text-blue-900"
                          : "hover:bg-muted border-border"

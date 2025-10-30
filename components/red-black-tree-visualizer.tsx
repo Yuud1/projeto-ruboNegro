@@ -6,7 +6,6 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { TreeVisualization } from "./tree-visualization"
 import { StepNavigator } from "./step-navigator"
-import { TreeIntroduction } from "./tree-introduction"
 import { TreeStatistics } from "./tree-statistics"
 import { RandomGenerator } from "./random-generator"
 import { PresentationMode } from "./presentation-mode"
@@ -81,7 +80,7 @@ export function RedBlackTreeVisualizer() {
 
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background overflow-x-hidden">
       <header className="border-b border-border bg-card">
         <div className="container mx-auto px-6 py-4 lg:px-8 xl:px-12">
           <div className="flex justify-between items-center">
@@ -255,26 +254,24 @@ export function RedBlackTreeVisualizer() {
 
             {!isSidebarCollapsed && (
               <div className="hidden lg:block w-80 flex-shrink-0 space-y-6">
-                <TreeIntroduction />
                 <RandomGenerator onGenerate={handleRandomGenerate} />
-                <TreeStatistics tree={currentTree} />
-                <OperationHistory steps={steps} currentStep={currentStep} onGoToStep={goToStep} />
                 <SequenceManager 
                   currentSteps={steps} 
                   onLoadSequence={loadSequence} 
                 />
+                <TreeStatistics tree={currentTree} />
+                <OperationHistory steps={steps} currentStep={currentStep} onGoToStep={goToStep} />
               </div>
             )}
 
             <div className="lg:hidden space-y-6">
-              <TreeIntroduction />
               <RandomGenerator onGenerate={handleRandomGenerate} />
-              <TreeStatistics tree={currentTree} />
-              <OperationHistory steps={steps} currentStep={currentStep} onGoToStep={goToStep} />
               <SequenceManager 
                 currentSteps={steps} 
                 onLoadSequence={loadSequence} 
               />
+              <TreeStatistics tree={currentTree} />
+              <OperationHistory steps={steps} currentStep={currentStep} onGoToStep={goToStep} />
             </div>
           </div>
         )}

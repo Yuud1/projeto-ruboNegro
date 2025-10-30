@@ -1,7 +1,6 @@
 "use client"
 
 import { Card } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
 
 interface PseudocodeLine {
   number: number
@@ -31,17 +30,19 @@ const algorithms = {
       { number: 4, code: "  y = x" },
       { number: 5, code: "  if z.key < x.key" },
       { number: 6, code: "    x = x.left" },
-      { number: 7, code: "  else x = x.right" },
-      { number: 8, code: "z.p = y" },
-      { number: 9, code: "if y == T.nil" },
-      { number: 10, code: "  T.root = z" },
-      { number: 11, code: "elseif z.key < y.key" },
-      { number: 12, code: "  y.left = z" },
-      { number: 13, code: "else y.right = z" },
-      { number: 14, code: "z.left = T.nil" },
-      { number: 15, code: "z.right = T.nil" },
-      { number: 16, code: "z.color = RED" },
-      { number: 17, code: "RB-INSERT-FIXUP(T, z)" }
+      { number: 7, code: "  else" },
+      { number: 8, code: "    x = x.right" },
+      { number: 9, code: "z.p = y" },
+      { number: 10, code: "if y == T.nil" },
+      { number: 11, code: "  T.root = z" },
+      { number: 12, code: "elseif z.key < y.key" },
+      { number: 13, code: "  y.left = z" },
+      { number: 14, code: "else" },
+      { number: 15, code: "  y.right = z" },
+      { number: 16, code: "z.left = T.nil" },
+      { number: 17, code: "z.right = T.nil" },
+      { number: 18, code: "z.color = RED" },
+      { number: 19, code: "RB-INSERT-FIXUP(T, z)" }
     ]
   },
   'insert-fixup': {
@@ -91,9 +92,10 @@ const algorithms = {
       { number: 7, code: "  T.root = y" },
       { number: 8, code: "elseif x == x.p.left" },
       { number: 9, code: "  x.p.left = y" },
-      { number: 10, code: "else x.p.right = y" },
-      { number: 11, code: "y.left = x" },
-      { number: 12, code: "x.p = y" }
+      { number: 10, code: "else" },
+      { number: 11, code: "  x.p.right = y" },
+      { number: 12, code: "y.left = x" },
+      { number: 13, code: "x.p = y" }
     ]
   },
   'right-rotate': {
@@ -108,9 +110,10 @@ const algorithms = {
       { number: 7, code: "  T.root = x" },
       { number: 8, code: "elseif y == y.p.right" },
       { number: 9, code: "  y.p.right = x" },
-      { number: 10, code: "else y.p.left = x" },
-      { number: 11, code: "x.right = y" },
-      { number: 12, code: "y.p = x" }
+      { number: 10, code: "else" },
+      { number: 11, code: "  y.p.left = x" },
+      { number: 12, code: "x.right = y" },
+      { number: 13, code: "y.p = x" }
     ]
   },
   delete: {
@@ -120,26 +123,24 @@ const algorithms = {
       { number: 2, code: "y-original-color = y.color" },
       { number: 3, code: "if z.left == T.nil" },
       { number: 4, code: "  x = z.right" },
-      { number: 5, code: "  RB-TRANSPLANT(T, z, z.right)" },
+      { number: 5, code: "  RB-Transplant(T, z, z.right)" },
       { number: 6, code: "elseif z.right == T.nil" },
       { number: 7, code: "  x = z.left" },
-      { number: 8, code: "  RB-TRANSPLANT(T, z, z.left)" },
-      { number: 9, code: "else" },
-      { number: 10, code: "  y = TREE-MINIMUM(z.right)" },
-      { number: 11, code: "  y-original-color = y.color" },
-      { number: 12, code: "  x = y.right" },
-      { number: 13, code: "  if y.p == z" },
-      { number: 14, code: "    x.p = y" },
-      { number: 15, code: "  else" },
-      { number: 16, code: "    RB-TRANSPLANT(T, y, y.right)" },
-      { number: 17, code: "    y.right = z.right" },
-      { number: 18, code: "    y.right.p = y" },
-      { number: 19, code: "  RB-TRANSPLANT(T, z, y)" },
-      { number: 20, code: "  y.left = z.left" },
-      { number: 21, code: "  y.left.p = y" },
-      { number: 22, code: "  y.color = z.color" },
-      { number: 23, code: "if y-original-color == BLACK" },
-      { number: 24, code: "  RB-DELETE-FIXUP(T, x)" }
+      { number: 8, code: "  RB-Transplant(T, z, z.left)" },
+      { number: 9, code: "else y = Tree-Minimum(z.right)" },
+      { number: 10, code: "  y-original-color = y.color" },
+      { number: 11, code: "  x = y.right" },
+      { number: 12, code: "  if y != z.right" },
+      { number: 13, code: "    RB-Transplant(T, y, y.right)" },
+      { number: 14, code: "    y.right = z.right" },
+      { number: 15, code: "    y.right.p = y" },
+      { number: 16, code: "else x.p = y" },
+      { number: 17, code: "  RB-Transplant(T, z, y)" },
+      { number: 18, code: "  y.left = z.left" },
+      { number: 19, code: "  y.left.p = y" },
+      { number: 20, code: "  y.color = z.color" },
+      { number: 21, code: "if y-original-color == BLACK" },
+      { number: 22, code: "  RB-Delete-Fixup(T, x)" }
     ]
   },
   'delete-fixup': {
@@ -205,7 +206,7 @@ export function PseudocodeDisplay({
   
   const getLineStyle = (lineNumber: number) => {
     if (activeLines.includes(lineNumber)) {
-      return "bg-green-100 border-l-4 border-green-500 text-green-900"
+      return "bg-green-100 border-green-500 text-green-900"
     }
     if (executedLines.includes(lineNumber)) {
       return "bg-blue-50 text-blue-800"
@@ -215,13 +216,15 @@ export function PseudocodeDisplay({
 
   const getConditionBadge = (lineNumber: number) => {
     if (conditions[lineNumber] !== undefined) {
+      const isTrue = !!conditions[lineNumber]
+      const base = "ml-auto text-[10px] leading-none font-medium px-1.5 py-0.5 rounded border"
+      const color = isTrue
+        ? "bg-green-500/15 text-green-700 border-green-600/30"
+        : "bg-red-500/15 text-red-700 border-red-600/30"
       return (
-        <Badge 
-          variant={conditions[lineNumber] ? "default" : "secondary"}
-          className="ml-2 text-xs"
-        >
-          {conditions[lineNumber] ? "True" : "False"}
-        </Badge>
+        <span className={`${base} ${color}`}>
+          {isTrue ? "True" : "False"}
+        </span>
       )
     }
     return null
@@ -238,23 +241,88 @@ export function PseudocodeDisplay({
     return null
   }
 
-  const renderAlgorithm = (alg: string, title: string, lines: any[]) => (
-    <div className="space-y-0.5 font-mono text-xs">
-      <h4 className="font-semibold text-sm mb-1">{title}</h4>
-      {lines.map((line) => (
-        <div key={line.number} className={`px-2 py-0.5 rounded ${getLineStyle(line.number)}`}>
-          <div className="flex items-center">
-            <span className="text-gray-500 w-6 text-right mr-2 text-xs">
-              {line.number}
-            </span>
-            <span className="flex-1 text-xs">{line.code}</span>
-            {getConditionBadge(line.number)}
+  const renderAlgorithm = (alg: string, title: string, lines: any[]) => {
+    const getIndentLevel = (code: string) => {
+      const match = code.match(/^(\s*)/);
+      return match ? Math.floor(match[1].length / 2) : 0;
+    }
+
+    const getBlockType = (code: string) => {
+      const trimmed = code.trim();
+      if (trimmed.startsWith('if ')) return 'if';
+      if (trimmed.startsWith('else')) return 'else';
+      if (trimmed.startsWith('while ')) return 'while';
+      if (trimmed.startsWith('for ')) return 'for';
+      return 'normal';
+    }
+
+    const getBlockColor = (blockType: string) => {
+      switch (blockType) {
+        case 'if': return 'bg-blue-400';
+        case 'else': return 'bg-green-400';
+        case 'while': return 'bg-purple-400';
+        case 'for': return 'bg-orange-400';
+        default: return 'bg-gray-300';
+      }
+    }
+
+    const LINE_HEIGHT = 22;
+    const TAB_WIDTH = 16;
+
+    const levels = lines.map((l: any) => getIndentLevel(l.code));
+
+    type Block = { level: number; start: number; end: number; colorClass: string };
+    const blocks: Block[] = [];
+    for (let i = 0; i < lines.length; i++) {
+      const type = getBlockType(lines[i].code);
+      if (type === 'normal') continue;
+      const level = levels[i] + 1;
+      let end = i;
+      for (let j = i + 1; j < lines.length; j++) {
+        if (levels[j] <= levels[i]) { end = j - 1; break; }
+        end = j;
+      }
+      if (end >= i + 1) {
+        blocks.push({ level, start: i + 1, end, colorClass: getBlockColor(type) });
+      }
+    }
+
+    return (
+      <div className="space-y-0.5 font-mono text-xs">
+        <h4 className="font-semibold text-sm mb-1">{title}</h4>
+        <div className="grid grid-cols-[2rem_1fr] gap-2">
+          <div>
+            {lines.map((line: any) => (
+              <div key={`n-${line.number}`} style={{ height: LINE_HEIGHT }} className="flex items-center justify-end text-gray-500 text-xs">
+                {line.number}
+              </div>
+            ))}
           </div>
-          {getComment(line.number)}
+          <div className="relative">
+            <div className="absolute inset-0 pointer-events-none">
+              {blocks.map((b, idx) => (
+                <div key={`b-${idx}`} className="absolute" style={{ left: b.level * TAB_WIDTH, top: b.start * LINE_HEIGHT, height: (b.end - b.start + 1) * LINE_HEIGHT }}>
+                  <div className={`absolute left-0 top-0 bottom-0 w-px ${b.colorClass}`}></div>
+                  <div className={`absolute left-0 top-0 w-2 h-px ${b.colorClass}`}></div>
+                  <div className={`absolute left-0 bottom-0 w-2 h-px ${b.colorClass}`}></div>
+                </div>
+              ))}
+            </div>
+            <div>
+              {lines.map((line: any, idx: number) => (
+                <div key={line.number} style={{ height: LINE_HEIGHT }} className={`px-2 rounded flex items-center ${getLineStyle(line.number)}`}>
+                  <pre className="text-xs whitespace-pre-wrap font-mono" style={{ paddingLeft: levels[idx] * TAB_WIDTH + 4 }}>
+                    {line.code.trimStart()}
+                  </pre>
+                  {getConditionBadge(line.number)}
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
-      ))}
-    </div>
-  )
+      </div>
+    );
+  }
 
   return (
     <Card className="p-3 h-full flex flex-col">
