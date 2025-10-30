@@ -7,9 +7,8 @@ import { Suspense } from "react"
 import "./globals.css"
 
 export const metadata: Metadata = {
-  title: "Visualizador de Árvore Rubro-Negra",
-  description: "Ferramenta educativa interativa para visualização de Árvores Rubro-Negras",
-  generator: "v0.app",
+  title: "Simulador Árvore Rubro-Negra",
+  description: "Ferramenta educativa para visualização e criação de Árvores Rubro-Negras"
 }
 
 export default function RootLayout({
