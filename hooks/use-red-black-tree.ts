@@ -86,11 +86,9 @@ export function useRedBlackTree() {
   }, [getCurrentTree])
 
   const loadSequence = useCallback((operations: Array<{type: 'insert' | 'delete', value: number}>) => {
-    // Reset the tree and load the sequence
     treeRef.current.reset()
     setCurrentStep(0)
     
-    // Replay all operations from the sequence
     operations.forEach((operation) => {
       if (operation.type === "insert") {
         treeRef.current.insert(operation.value)

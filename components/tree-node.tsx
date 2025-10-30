@@ -20,7 +20,7 @@ export function TreeNode({ node, x, y, isHighlighted = false, animationType = nu
   useEffect(() => {
     if (animationType) {
       setIsAnimating(true)
-      const timer = setTimeout(() => setIsAnimating(false), 600)
+      const timer = setTimeout(() => setIsAnimating(false), 500)
       return () => clearTimeout(timer)
     }
   }, [animationType])
@@ -56,7 +56,7 @@ export function TreeNode({ node, x, y, isHighlighted = false, animationType = nu
         transformOrigin: `${x}px ${y}px`,
       }}
     >
-      {/* Node shadow with animation */}
+      
       <circle
         cx={x + 2}
         cy={y + 2}
@@ -70,8 +70,8 @@ export function TreeNode({ node, x, y, isHighlighted = false, animationType = nu
         cy={y}
         r={nodeRadius}
         fill={isRed ? "rgb(239 68 68)" : "rgb(55 65 81)"}
-        stroke={isHighlighted ? "rgb(59 130 246)" : "rgb(156 163 175)"}
-        strokeWidth={isHighlighted ? 3 : 1}
+        stroke="rgb(156 163 175)"
+        strokeWidth={1}
         className="transition-all duration-500 ease-in-out"
         style={{
           filter: isAnimating ? "drop-shadow(0 0 8px rgba(59, 130, 246, 0.5))" : "none",

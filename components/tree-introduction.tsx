@@ -33,7 +33,7 @@ export function TreeIntroduction() {
 
       <Card className="p-4">
         <Collapsible open={isRulesOpen} onOpenChange={setIsRulesOpen}>
-          <CollapsibleTrigger className="flex items-center justify-between w-full text-left">
+          <CollapsibleTrigger className="flex items-center justify-between w-full text-left cursor-pointer">
             <div className="flex items-center gap-2">
               <BookOpen className="w-4 h-4 text-primary" />
               <span className="font-semibold">Regras da Árvore</span>

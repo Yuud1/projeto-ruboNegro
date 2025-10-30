@@ -18,15 +18,17 @@ export interface TreeStep {
   type: "insert" | "delete" | "recolor" | "rotate-left" | "rotate-right" | "initial"
   affectedNodes: string[]
   tree: TreeNode | null
+  meta?: any
 }
 
 export class RedBlackTree {
   private root: TreeNode | null = null
   private steps: TreeStep[] = []
   private nodeIdCounter = 0
+  private currentRootOp: 'insert' | 'delete' | null = null
 
   constructor() {
-    this.addStep("initial", "Árvore inicializada vazia", [])
+    this.addStep("initial", "Árvore inicializada vazia", [], { rootOp: 'initial' })
   }
 
   private createNode(value: number): TreeNode {
@@ -40,13 +42,14 @@ export class RedBlackTree {
     }
   }
 
-  private addStep(type: TreeStep["type"], description: string, affectedNodes: string[]): void {
+  private addStep(type: TreeStep["type"], description: string, affectedNodes: string[], meta?: any): void {
     this.steps.push({
       id: `step-${this.steps.length}`,
       description,
       type,
       affectedNodes,
       tree: this.cloneTree(this.root),
+      meta,
     })
   }
 
@@ -92,7 +95,10 @@ export class RedBlackTree {
     rightChild.left = node
     node.parent = rightChild
 
-    this.addStep("rotate-left", `Rotação à esquerda no nó ${node.value}`, [node.id, rightChild.id])
+    this.addStep("rotate-left", `Rotação à esquerda no nó ${node.value}`, [node.id, rightChild.id], {
+      rootOp: this.currentRootOp || 'insert',
+      parentSide: rightChild.parent ? (rightChild.parent.left === rightChild ? 'left' : 'right') : null,
+    })
   }
 
   private rotateRight(node: TreeNode): void {
@@ -116,7 +122,10 @@ export class RedBlackTree {
     leftChild.right = node
     node.parent = leftChild
 
-    this.addStep("rotate-right", `Rotação à direita no nó ${node.value}`, [node.id, leftChild.id])
+    this.addStep("rotate-right", `Rotação à direita no nó ${node.value}`, [node.id, leftChild.id], {
+      rootOp: this.currentRootOp || 'insert',
+      parentSide: leftChild.parent ? (leftChild.parent.left === leftChild ? 'left' : 'right') : null,
+    })
   }
 
   private fixInsert(node: TreeNode): void {
@@ -125,7 +134,6 @@ export class RedBlackTree {
         const uncle = node.parent.parent.right
 
         if (uncle && uncle.color === NodeColor.RED) {
-          // Case 1: Uncle is red
           node.parent.color = NodeColor.BLACK
           uncle.color = NodeColor.BLACK
           node.parent.parent.color = NodeColor.RED
@@ -133,21 +141,22 @@ export class RedBlackTree {
             "recolor",
             `Recoloração: pai ${node.parent.value} e tio ${uncle.value} ficam pretos, avô ${node.parent.parent.value} fica vermelho`,
             [node.parent.id, uncle.id, node.parent.parent.id],
+            { rootOp: this.currentRootOp || 'insert', case: 'uncle-red', parentSide: 'left' }
           )
           node = node.parent.parent
         } else {
           if (node === node.parent.right) {
-            // Case 2: Node is right child
             node = node.parent
+            this.addStep("recolor", `Preparando rotação esquerda (triângulo)`, [node.id], { rootOp: this.currentRootOp || 'insert', case: 'triangle', parentSide: 'left' })
             this.rotateLeft(node)
           }
-          // Case 3: Node is left child
           node.parent!.color = NodeColor.BLACK
           node.parent!.parent!.color = NodeColor.RED
           this.addStep(
             "recolor",
             `Recoloração: pai ${node.parent!.value} fica preto, avô ${node.parent!.parent!.value} fica vermelho`,
             [node.parent!.id, node.parent!.parent!.id],
+            { rootOp: this.currentRootOp || 'insert', case: 'line', parentSide: 'left' }
           )
           this.rotateRight(node.parent!.parent!)
         }
@@ -155,7 +164,6 @@ export class RedBlackTree {
         const uncle = node.parent.parent?.left
 
         if (uncle && uncle.color === NodeColor.RED) {
-          // Case 1: Uncle is red
           node.parent.color = NodeColor.BLACK
           uncle.color = NodeColor.BLACK
           node.parent.parent!.color = NodeColor.RED
@@ -163,12 +171,13 @@ export class RedBlackTree {
             "recolor",
             `Recoloração: pai ${node.parent.value} e tio ${uncle.value} ficam pretos, avô ${node.parent.parent!.value} fica vermelho`,
             [node.parent.id, uncle.id, node.parent.parent!.id],
+            { rootOp: this.currentRootOp || 'insert', case: 'uncle-red', parentSide: 'right' }
           )
           node = node.parent.parent!
         } else {
           if (node === node.parent.left) {
-            // Case 2: Node is left child
             node = node.parent
+            this.addStep("recolor", `Preparando rotação direita (triângulo)`, [node.id], { rootOp: this.currentRootOp || 'insert', case: 'triangle', parentSide: 'right' })
             this.rotateRight(node)
           }
           // Case 3: Node is right child
@@ -178,6 +187,7 @@ export class RedBlackTree {
             "recolor",
             `Recoloração: pai ${node.parent!.value} fica preto, avô ${node.parent!.parent!.value} fica vermelho`,
             [node.parent!.id, node.parent!.parent!.id],
+            { rootOp: this.currentRootOp || 'insert', case: 'line', parentSide: 'right' }
           )
           this.rotateLeft(node.parent!.parent!)
         }
@@ -186,47 +196,55 @@ export class RedBlackTree {
 
     if (this.root && this.root.color === NodeColor.RED) {
       this.root.color = NodeColor.BLACK
-      this.addStep("recolor", "Raiz recolorida para preto", [this.root.id])
+      this.addStep("recolor", "Raiz recolorida para preto", [this.root.id], { rootOp: this.currentRootOp || 'insert' })
     }
   }
 
   insert(value: number): void {
+    this.currentRootOp = 'insert'
     const newNode = this.createNode(value)
 
     if (!this.root) {
       this.root = newNode
       this.root.color = NodeColor.BLACK
-      this.addStep("insert", `Inserido nó ${value} como raiz (preto)`, [newNode.id])
+      this.addStep("insert", `Inserido nó ${value} como raiz (preto)`, [newNode.id], { rootOp: 'insert', isRoot: true })
+      this.currentRootOp = null
       return
     }
 
     let current = this.root
     let parent: TreeNode | null = null
 
-    // Find insertion point
     while (current) {
       parent = current
       if (value < current.value) {
-        current = current.left
+        current = current.left!
       } else if (value > current.value) {
-        current = current.right
+        current = current.right!
       } else {
-        // Value already exists
         return
       }
     }
 
-    newNode.parent = parent
-    if (value < parent!.value) {
-      parent!.left = newNode
+    if (!parent) {
+      this.root = newNode
     } else {
-      parent!.right = newNode
+      newNode.parent = parent
+      if (value < parent.value) {
+        parent.left = newNode
+      } else {
+        parent.right = newNode
+      }
     }
 
-    this.addStep("insert", `Inserido nó ${value} (vermelho) como filho de ${parent!.value}`, [newNode.id])
+    this.addStep("insert", `Inserido nó ${value} (vermelho)${parent ? ` como filho de ${parent.value}` : ' como raiz'}`, [newNode.id], {
+      rootOp: 'insert',
+      direction: parent && value < parent.value ? 'left' : 'right',
+      isRoot: false,
+    })
 
-    // Fix Red-Black Tree properties
     this.fixInsert(newNode)
+    this.currentRootOp = null
   }
 
   private findNode(value: number): TreeNode | null {
@@ -250,92 +268,109 @@ export class RedBlackTree {
     return node
   }
 
-  private fixDelete(node: TreeNode | null): void {
-    while (node && node !== this.root && node.color === NodeColor.BLACK) {
-      if (node === node.parent?.left) {
-        let sibling = node.parent.right
+  private fixDelete(node: TreeNode | null, parent: TreeNode | null, isLeftChild: boolean): void {
+    while ((node !== this.root) && (node == null || node.color === NodeColor.BLACK)) {
+      if (isLeftChild) {
+        let sibling = parent ? parent.right : null
         if (sibling && sibling.color === NodeColor.RED) {
-          // Case 1: Sibling is red
           sibling.color = NodeColor.BLACK
-          node.parent.color = NodeColor.RED
-          this.addStep("recolor", `Recoloração: irmão ${sibling.value} fica preto, pai ${node.parent.value} fica vermelho`, [sibling.id, node.parent.id])
-          this.rotateLeft(node.parent)
-          sibling = node.parent.right
+          if (parent) parent.color = NodeColor.RED
+          this.addStep("recolor", `Recoloração: irmão ${sibling.value} fica preto, pai ${parent?.value} fica vermelho`, [sibling.id, parent?.id || ''], {
+            rootOp: 'delete', isLeftChild: true, siblingColor: 'RED'
+          })
+          if (parent) this.rotateLeft(parent)
+          sibling = parent ? parent.right : null
         }
 
         if (sibling && 
             (!sibling.left || sibling.left.color === NodeColor.BLACK) &&
             (!sibling.right || sibling.right.color === NodeColor.BLACK)) {
-          // Case 2: Sibling and its children are black
           sibling.color = NodeColor.RED
-          this.addStep("recolor", `Recoloração: irmão ${sibling.value} fica vermelho`, [sibling.id])
-          node = node.parent
+          this.addStep("recolor", `Recoloração: irmão ${sibling.value} fica vermelho`, [sibling.id], {
+            rootOp: 'delete', isLeftChild: true, bothChildrenBlack: true
+          })
+          node = parent
+          parent = node ? node.parent : null
+          isLeftChild = parent ? (node === parent.left) : false
         } else {
           if (sibling && (!sibling.right || sibling.right.color === NodeColor.BLACK)) {
-            // Case 3: Sibling's right child is black
             if (sibling.left) sibling.left.color = NodeColor.BLACK
             sibling.color = NodeColor.RED
-            this.addStep("recolor", `Recoloração: sobrinho esquerdo fica preto, irmão ${sibling.value} fica vermelho`, [sibling.left?.id || '', sibling.id])
+            this.addStep("recolor", `Recoloração: sobrinho esquerdo fica preto, irmão ${sibling.value} fica vermelho`, [sibling.left?.id || '', sibling.id], {
+              rootOp: 'delete', isLeftChild: true, rightChildBlack: true
+            })
             this.rotateRight(sibling)
-            sibling = node.parent?.right
+            sibling = parent ? parent.right : null
           }
           
           if (sibling) {
-            sibling.color = node.parent?.color || NodeColor.BLACK
-            if (node.parent) node.parent.color = NodeColor.BLACK
+            sibling.color = parent?.color || NodeColor.BLACK
+            if (parent) parent.color = NodeColor.BLACK
             if (sibling.right) sibling.right.color = NodeColor.BLACK
-            this.addStep("recolor", `Recoloração final: irmão ${sibling.value} herda cor do pai, pai fica preto, sobrinho direito fica preto`, [sibling.id, node.parent?.id || '', sibling.right?.id || ''])
-            this.rotateLeft(node.parent!)
+            this.addStep("recolor", `Recoloração final: irmão ${sibling.value} herda cor do pai, pai fica preto, sobrinho direito fica preto`, [sibling.id, parent?.id || '', sibling.right?.id || ''], {
+              rootOp: 'delete', isLeftChild: true
+            })
+            if (parent) this.rotateLeft(parent)
           }
           node = this.root
+          parent = null
         }
       } else {
-        let sibling = node.parent?.left
+        let sibling = parent ? parent.left : null
         if (sibling && sibling.color === NodeColor.RED) {
-          // Case 1: Sibling is red
           sibling.color = NodeColor.BLACK
-          if (node.parent) node.parent.color = NodeColor.RED
-          this.addStep("recolor", `Recoloração: irmão ${sibling.value} fica preto, pai ${node.parent?.value} fica vermelho`, [sibling.id, node.parent?.id || ''])
-          this.rotateRight(node.parent!)
-          sibling = node.parent?.left
+          if (parent) parent.color = NodeColor.RED
+          this.addStep("recolor", `Recoloração: irmão ${sibling.value} fica preto, pai ${parent?.value} fica vermelho`, [sibling.id, parent?.id || ''], {
+            rootOp: 'delete', isLeftChild: false, siblingColor: 'RED'
+          })
+          if (parent) this.rotateRight(parent)
+          sibling = parent ? parent.left : null
         }
 
         if (sibling && 
             (!sibling.left || sibling.left.color === NodeColor.BLACK) &&
             (!sibling.right || sibling.right.color === NodeColor.BLACK)) {
-          // Case 2: Sibling and its children are black
           sibling.color = NodeColor.RED
-          this.addStep("recolor", `Recoloração: irmão ${sibling.value} fica vermelho`, [sibling.id])
-          node = node.parent
+          this.addStep("recolor", `Recoloração: irmão ${sibling.value} fica vermelho`, [sibling.id], {
+            rootOp: 'delete', isLeftChild: false, bothChildrenBlack: true
+          })
+          node = parent
+          parent = node ? node.parent : null
+          isLeftChild = parent ? (node === parent.left) : false
         } else {
           if (sibling && (!sibling.left || sibling.left.color === NodeColor.BLACK)) {
-            // Case 3: Sibling's left child is black
             if (sibling.right) sibling.right.color = NodeColor.BLACK
             sibling.color = NodeColor.RED
-            this.addStep("recolor", `Recoloração: sobrinho direito fica preto, irmão ${sibling.value} fica vermelho`, [sibling.right?.id || '', sibling.id])
+            this.addStep("recolor", `Recoloração: sobrinho direito fica preto, irmão ${sibling.value} fica vermelho`, [sibling.right?.id || '', sibling.id], {
+              rootOp: 'delete', isLeftChild: false, leftChildBlack: true
+            })
             this.rotateLeft(sibling)
-            sibling = node.parent?.left
+            sibling = parent ? parent.left : null
           }
           
           if (sibling) {
-            sibling.color = node.parent?.color || NodeColor.BLACK
-            if (node.parent) node.parent.color = NodeColor.BLACK
+            sibling.color = parent?.color || NodeColor.BLACK
+            if (parent) parent.color = NodeColor.BLACK
             if (sibling.left) sibling.left.color = NodeColor.BLACK
-            this.addStep("recolor", `Recoloração final: irmão ${sibling.value} herda cor do pai, pai fica preto, sobrinho esquerdo fica preto`, [sibling.id, node.parent?.id || '', sibling.left?.id || ''])
-            this.rotateRight(node.parent!)
+            this.addStep("recolor", `Recoloração final: irmão ${sibling.value} herda cor do pai, pai fica preto, sobrinho esquerdo fica preto`, [sibling.id, parent?.id || '', sibling.left?.id || ''], {
+              rootOp: 'delete', isLeftChild: false
+            })
+            if (parent) this.rotateRight(parent)
           }
           node = this.root
+          parent = null
         }
       }
     }
 
     if (node) {
       node.color = NodeColor.BLACK
-      this.addStep("recolor", `Nó ${node.value} recolorido para preto`, [node.id])
+      this.addStep("recolor", `Nó ${node.value} recolorido para preto`, [node.id], { rootOp: 'delete' })
     }
   }
 
   delete(value: number): boolean {
+    this.currentRootOp = 'delete'
     const nodeToDelete = this.findNode(value)
     if (!nodeToDelete) {
       return false
@@ -345,22 +380,52 @@ export class RedBlackTree {
     let originalColor = nodeToDelete.color
 
     if (!nodeToDelete.left) {
-      // Node has no left child
       nodeToFix = nodeToDelete.right
+      const parentAfter = nodeToDelete.parent
+      const isLeftChild = parentAfter ? (nodeToDelete === parentAfter.left) : false
       this.transplant(nodeToDelete, nodeToDelete.right)
+      this.addStep("delete", `Removido nó ${value}`, [nodeToDelete.id], {
+        rootOp: 'delete',
+        hasLeftChild: !!nodeToDelete.left,
+        hasRightChild: !!nodeToDelete.right,
+        originalColor: originalColor === NodeColor.BLACK ? 'BLACK' : 'RED'
+      })
+      if (originalColor === NodeColor.BLACK) {
+        this.fixDelete(nodeToFix, parentAfter, isLeftChild)
+      }
+      this.currentRootOp = null
+      return true
     } else if (!nodeToDelete.right) {
-      // Node has no right child
       nodeToFix = nodeToDelete.left
+      const parentAfter = nodeToDelete.parent
+      const isLeftChild = parentAfter ? (nodeToDelete === parentAfter.left) : false
       this.transplant(nodeToDelete, nodeToDelete.left)
+      this.addStep("delete", `Removido nó ${value}`, [nodeToDelete.id], {
+        rootOp: 'delete',
+        hasLeftChild: !!nodeToDelete.left,
+        hasRightChild: !!nodeToDelete.right,
+        originalColor: originalColor === NodeColor.BLACK ? 'BLACK' : 'RED'
+      })
+      if (originalColor === NodeColor.BLACK) {
+        this.fixDelete(nodeToFix, parentAfter, isLeftChild)
+      }
+      this.currentRootOp = null
+      return true
     } else {
-      // Node has both children
       const successor = this.findMin(nodeToDelete.right)
       originalColor = successor.color
       nodeToFix = successor.right
 
-      if (successor.parent === nodeToDelete) {
+      const isSuccessorChild = successor.parent === nodeToDelete
+      let parentForFix: TreeNode | null
+      let isLeftChildFix = false
+      if (isSuccessorChild) {
+        parentForFix = successor
+        isLeftChildFix = false
         if (nodeToFix) nodeToFix.parent = successor
       } else {
+        parentForFix = successor.parent || null
+        isLeftChildFix = false
         this.transplant(successor, successor.right)
         successor.right = nodeToDelete.right
         if (successor.right) successor.right.parent = successor
@@ -370,15 +435,20 @@ export class RedBlackTree {
       successor.left = nodeToDelete.left
       if (successor.left) successor.left.parent = successor
       successor.color = nodeToDelete.color
+      this.addStep("delete", `Removido nó ${value}`, [nodeToDelete.id], {
+        rootOp: 'delete',
+        hasLeftChild: !!nodeToDelete.left,
+        hasRightChild: !!nodeToDelete.right,
+        isSuccessorChild,
+        originalColor: originalColor === NodeColor.BLACK ? 'BLACK' : 'RED'
+      })
+      if (originalColor === NodeColor.BLACK) {
+        this.fixDelete(nodeToFix, parentForFix, isLeftChildFix)
+      }
+      this.currentRootOp = null
+      return true
     }
-
-    this.addStep("delete", `Removido nó ${value}`, [nodeToDelete.id])
-
-    if (originalColor === NodeColor.BLACK) {
-      this.fixDelete(nodeToFix)
-    }
-
-    return true
+    // unreachable
   }
 
   private transplant(u: TreeNode, v: TreeNode | null): void {
@@ -428,7 +498,6 @@ export class RedBlackTree {
     return values
   }
 
-  // Helper method to get tree at specific step
   getTreeAtStep(stepIndex: number): TreeNode | null {
     if (stepIndex < 0 || stepIndex >= this.steps.length) {
       return null
@@ -436,7 +505,6 @@ export class RedBlackTree {
     return this.steps[stepIndex].tree
   }
 
-  // Helper method to calculate node positions for visualization
   calculateNodePositions(node: TreeNode | null, x = 0, y = 0, spacing = 100): Map<string, { x: number; y: number }> {
     const positions = new Map<string, { x: number; y: number }>()
 
