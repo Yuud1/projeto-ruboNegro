@@ -3,11 +3,8 @@
 import { useState, useEffect } from "react"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
 import { Slider } from "@/components/ui/slider"
-import { useRedBlackTree } from "@/hooks/use-red-black-tree"
 import { TreeVisualization } from "./tree-visualization"
-import { TreeStatistics } from "./tree-statistics"
 import { PseudocodeDisplay } from "./pseudocode-display"
 import { 
   Play, 
@@ -139,7 +136,6 @@ export function PresentationMode({
         return [16, 17, 18, 19]
       case "recolor":
         if (stepData?.meta?.rootOp === 'delete') {
-          // delete-fixup casos por ramo
           const left = stepData?.meta?.isLeftChild === true
           if (left) {
             if (stepData?.meta?.siblingColor === 'RED') return [4,5,6,7,8]
@@ -153,10 +149,18 @@ export function PresentationMode({
             return [39,40,41,42,43]
           }
         }
+        if (stepData?.meta?.case === 'uncle-red') {
+          return [4, 5, 6, 7, 8]
+        }
+        if (stepData?.meta?.case === 'triangle') {
+          return stepData?.meta?.parentSide === 'left' ? [10, 11] : [24, 25]
+        }
+        if (stepData?.meta?.case === 'line') {
+          return stepData?.meta?.parentSide === 'left' ? [13, 14, 15] : [27, 28, 29]
+        }
         return [4, 5, 6, 7, 8]
       case "rotate-left":
         if (stepData?.meta?.rootOp === 'delete') {
-          // rotações em delete-fixup são finais dos casos
           const left = stepData?.meta?.isLeftChild === true
           return left ? [21] : [42]
         }
@@ -227,12 +231,9 @@ export function PresentationMode({
       case "delete":
         conditions[3] = stepData?.hasLeftChild === false
         conditions[6] = stepData?.hasRightChild === false
-        // Linha 12: if y != z.right (true quando o sucessor NÃO é filho direto)
         conditions[12] = !(stepData?.isSuccessorChild || false)
-        // Linha 21: if y-original-color == BLACK
         conditions[21] = stepData?.originalColor === "BLACK"
         break
-      // delete-fixup condições são mostradas dentro de recolor/rotate via meta
     }
     
     return conditions

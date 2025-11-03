@@ -64,7 +64,7 @@ export function TreeStatistics({ tree }: TreeStatisticsProps) {
         violations.push(`Alturas pretas diferentes: esquerda ${leftBlackHeight}, direita ${rightBlackHeight}`)
       }
 
-      return currentBlackHeight
+      return leftBlackHeight > rightBlackHeight ? leftBlackHeight : rightBlackHeight
     }
 
     traverse(node, 0, 0)
