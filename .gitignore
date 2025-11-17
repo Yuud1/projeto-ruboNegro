@@ -5,7 +5,8 @@
 
 # next.js
 /.next/
-/out/
+/out/*
+!/out/README.md
 
 # production
 /build
@@ -25,3 +26,6 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# tests
+/coverage

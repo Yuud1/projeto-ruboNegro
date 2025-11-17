@@ -203,7 +203,7 @@ export class RedBlackTree {
             })
             this.rotateRight(node)
           }
-          console.log(`[DEBUG fixInsert] CASO 3: Linha - recolorir e rotacionar`)
+          //console.log(`[DEBUG fixInsert] CASO 3: Linha - recolorir e rotacionar`)
           const parent = node.parent!
           const grandparent = parent.parent!
           
@@ -212,7 +212,7 @@ export class RedBlackTree {
             break
           }
           
-          console.log(`[DEBUG fixInsert] Antes CASO 3: parent=${parent.value}, grandparent=${grandparent.value}`)
+          //console.log(`[DEBUG fixInsert] Antes CASO 3: parent=${parent.value}, grandparent=${grandparent.value}`)
           
           parent.color = NodeColor.BLACK
           grandparent.color = NodeColor.RED
@@ -228,7 +228,7 @@ export class RedBlackTree {
     }
 
     if (this.root && this.root.color === NodeColor.RED) {
-      console.log(`[DEBUG fixInsert] Corrigindo raiz vermelha: ${this.root.value}`)
+      //console.log(`[DEBUG fixInsert] Corrigindo raiz vermelha: ${this.root.value}`)
       this.root.color = NodeColor.BLACK
       this.addStep("recolor", "Raiz recolorida para preto", [this.root.id], { 
         rootOp: this.currentRootOp || 'insert' 
@@ -247,12 +247,12 @@ export class RedBlackTree {
   }
 
   private debugPrintTree(): void {
-    console.log('[DEBUG Tree Structure]')
+    //console.log('[DEBUG Tree Structure]')
     const printNode = (node: TreeNode | null, indent: string = '', isLast: boolean = true): void => {
       if (!node) return
       const marker = isLast ? '└── ' : '├── '
       const colorIcon = node.color === NodeColor.RED ? '🔴' : '⚫'
-      console.log(`${indent}${marker}${colorIcon} ${node.value} (${node.color})`)
+    //  console.log(`${indent}${marker}${colorIcon} ${node.value} (${node.color})`)
       const childIndent = indent + (isLast ? '    ' : '│   ')
       if (node.right) {
         printNode(node.right, childIndent, !node.left)
@@ -316,11 +316,11 @@ export class RedBlackTree {
       isRoot: false,
     })
 
-    console.log(`[DEBUG insert] Antes de fixInsert para ${value}`)
+    //console.log(`[DEBUG insert] Antes de fixInsert para ${value}`)
     
     this.fixInsert(newNode)
     
-    console.log(`[DEBUG insert] Após fixInsert para ${value}`)
+    //console.log(`[DEBUG insert] Após fixInsert para ${value}`)
     const validation = this.validateTree()
     if (!validation.isValid) {
       console.error(`[DEBUG insert] ÁRVORE INVÁLIDA após inserção de ${value}`)
@@ -332,7 +332,7 @@ export class RedBlackTree {
         violations: validation.violations
       })
     } else {
-      console.log(`[DEBUG insert] Árvore válida após inserção de ${value}`)
+      //console.log(`[DEBUG insert] Árvore válida após inserção de ${value}`)
       this.addStep("recolor", `Árvore válida após inserção de ${value}`, [], {
         rootOp: 'insert',
         finalState: true
