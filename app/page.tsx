@@ -1,9 +1,25 @@
-import { RedBlackTreeVisualizer } from "@/components/red-black-tree-visualizer"
+"use client"
+
+import { RedBlackTreeVisualizer, RedBlackTreeVisualizerHandle } from "@/components/red-black-tree-visualizer"
+import { useEffect, useRef } from "react"
+import { useSearchParams } from "next/navigation"
+import { extractSearchParams } from "@/lib/extractSearchParams"
 
 export default function Home() {
-  return (
-    <div className="min-h-screen bg-background overflow-x-hidden">
-      <RedBlackTreeVisualizer />
-    </div>
-  )
+  const ref = useRef<RedBlackTreeVisualizerHandle>(null)
+  const searchParams = useSearchParams()
+
+  useEffect(() => {
+    if (!ref.current) return
+
+    const v = searchParams.get("v") ?? searchParams.get("values")
+    if (!v) return
+
+    let numbers = extractSearchParams(v, searchParams);
+    if (numbers.length > 0) {
+      ref.current.insert(numbers)
+    }
+  }, [searchParams])
+
+  return <RedBlackTreeVisualizer ref={ref} />
 }
