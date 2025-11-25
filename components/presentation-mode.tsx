@@ -32,6 +32,7 @@ interface PresentationModeProps {
   previousStep: () => void
   goToStep: (step: number) => void
   reset: () => void
+  onInsert:(value: number | number[]) => void
 }
 
 export function PresentationMode({ 
