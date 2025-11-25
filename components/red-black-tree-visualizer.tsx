@@ -11,6 +11,7 @@ import { OperationHistory } from "./operation-history"
 import { SequenceManager } from "./sequence-manager"
 import { TreeStatistics } from "./tree-statistics"
 import { useRedBlackTree } from "@/hooks/use-red-black-tree"
+import { useToast } from "@/hooks/use-toast"
 import {
   Plus,
   Minus,
@@ -20,6 +21,7 @@ import {
   ChevronRight,
   Menu,
   X,
+  Share2,
 } from "lucide-react"
 
 import type { TreeNode, TreeStep } from "@/lib/red-black-tree" // ajuste o caminho
@@ -58,6 +60,7 @@ export const RedBlackTreeVisualizer = forwardRef<RedBlackTreeVisualizerHandle, P
     const [showPresentation, setShowPresentation] = useState(false)
     const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false)
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+    const { toast } = useToast()
 
     const {
       insertMultipleValues,
@@ -154,6 +157,38 @@ export const RedBlackTreeVisualizer = forwardRef<RedBlackTreeVisualizerHandle, P
       }
     }
 
+    const handleShare = async () => {
+      const values = getCurrentValues()
+      
+      if (values.length === 0) {
+        toast({
+          title: "Árvore vazia",
+          description: "Não há valores para compartilhar. Insira alguns valores primeiro.",
+          variant: "destructive",
+        })
+        return
+      }
+
+      try {
+        const params = new URLSearchParams()
+        params.set("v", values.join(","))
+        const shareUrl = `${window.location.origin}${window.location.pathname}?${params.toString()}`
+        
+        await navigator.clipboard.writeText(shareUrl)
+        
+        toast({
+          title: "Link copiado!",
+          description: "O link foi copiado para a área de transferência.",
+        })
+      } catch (error) {
+        toast({
+          title: "Erro ao compartilhar",
+          description: "Não foi possível copiar o link. Tente novamente.",
+          variant: "destructive",
+        })
+      }
+    }
+
     const currentTree = getCurrentTree()
     const currentStepData = getCurrentStep()
     const nodePositions = getNodePositions()
@@ -219,6 +254,9 @@ export const RedBlackTreeVisualizer = forwardRef<RedBlackTreeVisualizerHandle, P
                       <div className="flex gap-2">
                         <Button variant="outline" onClick={resetTree}>
                           <RotateCcw className="w-4 h-4 mr-2" /> Resetar
+                        </Button>
+                        <Button variant="outline" onClick={handleShare}>
+                          <Share2 className="w-4 h-4 mr-2" /> Compartilhar
                         </Button>
                         <Button variant="outline" onClick={() => setShowPresentation(true)}>
                           <Presentation className="w-4 h-4 mr-2" /> Apresentação
