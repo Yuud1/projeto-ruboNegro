@@ -226,8 +226,9 @@ export const RedBlackTreeVisualizer = forwardRef<RedBlackTreeVisualizerHandle, P
               previousStep={previousStep}
               goToStep={goToStepInternal}
               reset={resetTree}
-              // Permite inserir durante a apresentação!
+              // Permite inserir e remover durante a apresentação!
               onInsert={insert}
+              onRemove={remove}
             />
           ) : (
             <div className="flex flex-col lg:flex-row gap-6">
