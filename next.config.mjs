@@ -1,14 +1,13 @@
-/** @type {import('next').NextConfig} */
+const isProd = process.env.NODE_ENV === 'production';
 const nextConfig = {
-  eslint: {
-    ignoreDuringBuilds: true,
-  },
-  typescript: {
-    ignoreBuildErrors: true,
-  },
+  reactStrictMode: true,
   images: {
-    unoptimized: true,
+    unoptimized: true, // Disable default image optimization
   },
-}
+  assetPrefix: isProd ? '/red-black/' : '',
+  basePath: isProd ? '/red-black' : '',
+  output: 'export',
+  distDir: 'dist',
+};
 
-export default nextConfig
+export default nextConfig;
