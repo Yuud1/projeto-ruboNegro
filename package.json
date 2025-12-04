@@ -1,6 +1,7 @@
 {
-  "name": "simulador-arvore-rubro-negra",
+  "name": "red-black",
   "version": "0.1.0",
+  "homepage": "https://cayke1.github.io/red-black",
   "private": true,
   "scripts": {
     "build": "next build",
@@ -8,6 +9,8 @@
     "lint": "next lint",
     "start": "next start",
     "test": "jest",
+    "predeploy": "npm run build",
+    "deploy": "gh-pages -d dist",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
     "test-rbt": "tsx rb-tree-tester/cli.ts"
@@ -71,6 +74,7 @@
     "@types/node": "^22.18.6",
     "@types/react": "^18.3.24",
     "@types/react-dom": "^18",
+    "gh-pages": "^6.3.0",
     "jest": "^30.2.0",
     "jest-environment-jsdom": "^30.2.0",
     "postcss": "^8.5",
