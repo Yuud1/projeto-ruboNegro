@@ -208,13 +208,6 @@ export function TreeVisualization({
       <div className="flex flex-col h-[72vh] min-h-[420px]">
         <div className="relative overflow-hidden flex-1 bg-gradient-to-br from-card to-muted/10 flex items-center justify-center border-2 border-dashed border-border rounded-lg">
           <div className="text-center text-muted-foreground">
-            <div className="mb-4">
-              <div className="flex justify-center space-x-1">
-                <div className="w-3 h-3 bg-primary rounded-full animate-bounce"></div>
-                <div className="w-3 h-3 bg-primary rounded-full animate-bounce" style={{animationDelay: '0.1s'}}></div>
-                <div className="w-3 h-3 bg-primary rounded-full animate-bounce" style={{animationDelay: '0.2s'}}></div>
-              </div>
-            </div>
             <p className="text-lg font-medium">Visualização da Árvore</p>
             <p className="text-sm">A árvore aparecerá aqui quando você inserir valores</p>
           </div>
