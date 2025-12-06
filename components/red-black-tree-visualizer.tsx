@@ -10,6 +10,7 @@ import { PresentationMode } from "./presentation-mode"
 import { OperationHistory } from "./operation-history"
 import { SequenceManager } from "./sequence-manager"
 import { TreeStatistics } from "./tree-statistics"
+import { SequenceDisplay } from "./sequence-display"
 import { useRedBlackTree } from "@/hooks/use-red-black-tree"
 import { useToast } from "@/hooks/use-toast"
 import {
@@ -273,6 +274,9 @@ export const RedBlackTreeVisualizer = forwardRef<RedBlackTreeVisualizerHandle, P
                     {isSidebarCollapsed ? <ChevronRight /> : <ChevronLeft />}
                   </Card>
                 </div>
+
+                {/* Sequência de valores */}
+                <SequenceDisplay steps={steps} currentStep={currentStep} />
 
                 {/* Árvore */}
                 <Card className="p-6">
