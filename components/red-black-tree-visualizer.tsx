@@ -276,7 +276,7 @@ export const RedBlackTreeVisualizer = forwardRef<RedBlackTreeVisualizerHandle, P
                 </div>
 
                 {/* Sequência de valores */}
-                <SequenceDisplay steps={steps} currentStep={currentStep} />
+                <SequenceDisplay steps={steps} currentStep={currentStep} onGoToStep={goToStep} />
 
                 {/* Árvore */}
                 <Card className="p-6">
