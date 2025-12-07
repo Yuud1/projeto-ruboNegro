@@ -102,8 +102,8 @@ export function useRedBlackTree() {
     setCurrentStep(newSteps.length - 1)
   }, [])
 
-  const saveCurrentSequence = useCallback((name: string, description?: string) => {
-    return saveSequence(name, steps, description)
+  const saveCurrentSequence = useCallback(() => {
+    return saveSequence(steps)
   }, [saveSequence, steps])
 
   return {
