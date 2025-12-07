@@ -48,6 +48,7 @@ export function TreeVisualization({
   const [pan, setPan] = useState({ x: 0, y: 0 })
   const [isPanning, setIsPanning] = useState(false)
   const [lastPanPoint, setLastPanPoint] = useState({ x: 0, y: 0 })
+  const [previousNodeCount, setPreviousNodeCount] = useState(0)
   const svgRef = useRef<SVGSVGElement>(null)
   const containerRef = useRef<HTMLDivElement>(null)
 
@@ -66,6 +67,16 @@ export function TreeVisualization({
   useEffect(() => {
     setPreviousTree(tree)
   }, [tree])
+
+  // Centraliza automaticamente quando novos nós são inseridos
+  useEffect(() => {
+    const currentNodeCount = nodePositions.size
+    if (currentNodeCount > previousNodeCount) {
+      setZoom(1)
+      setPan({ x: 0, y: 0 })
+    }
+    setPreviousNodeCount(currentNodeCount)
+  }, [nodePositions.size])
 
   const handleZoomIn = () => {
     setZoom(prev => Math.min(prev * 1.2, 3))
