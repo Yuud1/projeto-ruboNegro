@@ -48,7 +48,6 @@ export function TreeVisualization({
   const [pan, setPan] = useState({ x: 0, y: 0 })
   const [isPanning, setIsPanning] = useState(false)
   const [lastPanPoint, setLastPanPoint] = useState({ x: 0, y: 0 })
-  const [autoCenter, setAutoCenter] = useState(true)
   const svgRef = useRef<SVGSVGElement>(null)
   const containerRef = useRef<HTMLDivElement>(null)
 
@@ -68,76 +67,23 @@ export function TreeVisualization({
     setPreviousTree(tree)
   }, [tree])
 
-  useEffect(() => {
-    if (!tree || nodePositions.size === 0) return
-    if (!autoCenter) return
-    const timer = setTimeout(() => {
-      centerView()
-      if (onCenterView) onCenterView()
-    }, 100)
-    return () => clearTimeout(timer)
-  }, [tree, nodePositions, onCenterView, autoCenter])
-
   const handleZoomIn = () => {
-    setAutoCenter(false)
     setZoom(prev => Math.min(prev * 1.2, 3))
   }
 
   const handleZoomOut = () => {
-    setAutoCenter(false)
     setZoom(prev => Math.max(prev / 1.2, 0.1))
   }
 
   const handleResetView = () => {
     setZoom(1)
     setPan({ x: 0, y: 0 })
-    setAutoCenter(true)
-    // recentra imediatamente após reset
-    setTimeout(() => centerView(), 0)
-  }
-
-  const centerView = () => {
-    if (!tree || nodePositions.size === 0) return
-
-    const bounds = Array.from(nodePositions.values()).reduce(
-      (acc, pos) => ({
-        minX: Math.min(acc.minX, pos.x),
-        maxX: Math.max(acc.maxX, pos.x),
-        minY: Math.min(acc.minY, pos.y),
-        maxY: Math.max(acc.maxY, pos.y),
-      }),
-      {
-        minX: Number.POSITIVE_INFINITY,
-        maxX: Number.NEGATIVE_INFINITY,
-        minY: Number.POSITIVE_INFINITY,
-        maxY: Number.NEGATIVE_INFINITY,
-      },
-    )
-
-    const centerX = (bounds.minX + bounds.maxX) / 2
-    const centerY = (bounds.minY + bounds.maxY) / 2
-    const width = bounds.maxX - bounds.minX
-    const height = bounds.maxY - bounds.minY
-
-    const containerWidth = containerRef.current?.clientWidth ?? 800
-    const containerHeight = containerRef.current?.clientHeight ?? 500
-    const margin = 100
-    
-    const zoomX = (containerWidth - margin) / width
-    const zoomY = (containerHeight - margin) / height
-    const newZoom = Math.min(zoomX, zoomY, 1)
-    const newPanX = (containerWidth / 2) - (centerX * newZoom)
-    const newPanY = (containerHeight / 2) - (centerY * newZoom)
-
-    setZoom(newZoom)
-    setPan({ x: newPanX, y: newPanY })
   }
 
   const handleMouseDown = (e: React.MouseEvent) => {
     if (e.button === 0) {
       setIsPanning(true)
       setLastPanPoint({ x: e.clientX, y: e.clientY })
-      setAutoCenter(false)
       e.preventDefault()
     }
   }
@@ -161,7 +107,6 @@ export function TreeVisualization({
   const handleWheel = (e: React.WheelEvent) => {
     e.preventDefault()
     e.stopPropagation()
-    setAutoCenter(false)
     const delta = e.deltaY > 0 ? 0.9 : 1.1
     setZoom(prev => Math.max(0.1, Math.min(3, prev * delta)))
   }
@@ -239,10 +184,18 @@ export function TreeVisualization({
   )
 
   const padding = 80
-  const svgWidth = Math.max(500, bounds.maxX - bounds.minX + padding * 2)
-  const svgHeight = Math.max(400, bounds.maxY - bounds.minY + padding * 2)
-  const offsetX = -bounds.minX + padding
-  const offsetY = -bounds.minY + padding
+  const treeWidth = bounds.maxX - bounds.minX
+  const treeHeight = bounds.maxY - bounds.minY
+  const svgWidth = Math.max(800, treeWidth + padding * 2)
+  const svgHeight = Math.max(500, treeHeight + padding * 2)
+
+  // Centraliza a árvore no viewBox
+  const centerX = svgWidth / 2
+  const centerY = padding + 40  // Um pouco de margem no topo
+  const treeCenterX = (bounds.minX + bounds.maxX) / 2
+  const treeCenterY = bounds.minY
+  const offsetX = centerX - treeCenterX
+  const offsetY = centerY - treeCenterY
 
   const getAnimationType = (nodeId: string) => {
     if (newNodes.has(nodeId)) return "insert"
