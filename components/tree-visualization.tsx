@@ -61,8 +61,21 @@ export function TreeVisualization({
         setHighlightedNodes(new Set())
       }, 5000)
       return () => clearTimeout(timer)
+    } else if (affectedNodes.length === 0) {
+      setAnimatingNodes(new Set())
+      setHighlightedNodes(new Set())
     }
   }, [affectedNodes, currentStepType])
+
+  useEffect(() => {
+    if (currentStep === totalSteps - 1 && totalSteps > 0) {
+      const timer = setTimeout(() => {
+        setHighlightedNodes(new Set())
+        setAnimatingNodes(new Set())
+      }, 1000)
+      return () => clearTimeout(timer)
+    }
+  }, [currentStep, totalSteps])
 
   useEffect(() => {
     setPreviousTree(tree)
