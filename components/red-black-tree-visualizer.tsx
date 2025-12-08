@@ -49,6 +49,9 @@ export interface RedBlackTreeVisualizerHandle {
 
   /** Retorna todo o histórico de passos (para salvar, compartilhar, etc) */
   getHistory: () => TreeStep[]
+
+  /** Preenche o input com valores sem inserir na árvore */
+  setInputValues: (values: number[]) => void
 }
 
 type Props = {
@@ -115,6 +118,10 @@ export const RedBlackTreeVisualizer = forwardRef<RedBlackTreeVisualizerHandle, P
       return result
     }, [getCurrentTree])
 
+    const setInputValues = useCallback((values: number[]) => {
+      setInputValue(values.join(", "))
+    }, [])
+
     // Expor API pública via ref
     useImperativeHandle(
       ref,
@@ -126,6 +133,7 @@ export const RedBlackTreeVisualizer = forwardRef<RedBlackTreeVisualizerHandle, P
         getCurrentValues,
         getCurrentTree,
         getHistory: () => steps,
+        setInputValues,
       }),
       [
         insert,
@@ -135,6 +143,7 @@ export const RedBlackTreeVisualizer = forwardRef<RedBlackTreeVisualizerHandle, P
         getCurrentValues,
         getCurrentTree,
         steps,
+        setInputValues,
       ]
     )
 
@@ -159,9 +168,9 @@ export const RedBlackTreeVisualizer = forwardRef<RedBlackTreeVisualizerHandle, P
     }
 
     const handleShare = async () => {
-      const values = getCurrentValues()
-      
-      if (values.length === 0) {
+      const insertSteps = steps.filter(step => step.type === "insert")
+
+      if (insertSteps.length === 0) {
         toast({
           title: "Árvore vazia",
           description: "Não há valores para compartilhar. Insira alguns valores primeiro.",
@@ -171,12 +180,17 @@ export const RedBlackTreeVisualizer = forwardRef<RedBlackTreeVisualizerHandle, P
       }
 
       try {
+        const values = insertSteps.map(step => {
+          const match = step.description.match(/Inserido nó (\d+)/)
+          return match ? parseInt(match[1], 10) : null
+        }).filter((v): v is number => v !== null)
+
         const params = new URLSearchParams()
         params.set("v", values.join(","))
         const shareUrl = `${window.location.origin}${window.location.pathname}?${params.toString()}`
-        
+
         await navigator.clipboard.writeText(shareUrl)
-        
+
         toast({
           title: "Link copiado!",
           description: "O link foi copiado para a área de transferência.",
@@ -189,6 +203,15 @@ export const RedBlackTreeVisualizer = forwardRef<RedBlackTreeVisualizerHandle, P
         })
       }
     }
+
+    const handleLoadSequence = useCallback((operations: Array<{type: 'insert' | 'delete', value: number}>) => {
+      const values = operations.map(op => op.value).join(", ")
+      setInputValue(values)
+    }, [])
+
+    const handleGenerateRandom = useCallback((values: number[]) => {
+      setInputValue(values.join(", "))
+    }, [])
 
     const currentTree = getCurrentTree()
     const currentStepData = getCurrentStep()
@@ -276,7 +299,7 @@ export const RedBlackTreeVisualizer = forwardRef<RedBlackTreeVisualizerHandle, P
                 </div>
 
                 {/* Sequência de valores */}
-                <SequenceDisplay steps={steps} currentStep={currentStep} />
+                <SequenceDisplay steps={steps} currentStep={currentStep} onGoToStep={goToStepInternal} />
 
                 {/* Árvore */}
                 <Card className="p-6">
@@ -301,8 +324,8 @@ export const RedBlackTreeVisualizer = forwardRef<RedBlackTreeVisualizerHandle, P
               {/* Sidebar */}
               {(!isSidebarCollapsed || typeof window !== "undefined" && window.innerWidth < 1024) && (
                 <div className={`${isSidebarCollapsed ? "hidden lg:block" : "block"} lg:w-80 space-y-6`}>
-                  <RandomGenerator onGenerate={insert} />
-                  <SequenceManager currentSteps={steps} onLoadSequence={loadSequence} />
+                  <RandomGenerator onGenerate={handleGenerateRandom} />
+                  <SequenceManager currentSteps={steps} onLoadSequence={handleLoadSequence} />
                   <OperationHistory steps={steps} currentStep={currentStep} onGoToStep={goToStepInternal} />
                   <TreeStatistics tree={currentTree} />
                 </div>

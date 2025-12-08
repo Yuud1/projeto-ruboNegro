@@ -17,7 +17,7 @@ export default function Home() {
 
     let numbers = extractSearchParams(v, searchParams);
     if (numbers.length > 0) {
-      ref.current.insert(numbers)
+      ref.current.setInputValues(numbers)
     }
   }, [searchParams])
 

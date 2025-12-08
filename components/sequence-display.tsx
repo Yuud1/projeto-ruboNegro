@@ -18,9 +18,10 @@ interface SequenceDisplayProps {
   steps: TreeStep[];
   currentStep: number;
   className?: string;
+  onGoToStep?: (step: number) => void;
 }
 
-export function SequenceDisplay({ steps, currentStep, className }: SequenceDisplayProps) {
+export function SequenceDisplay({ steps, currentStep, className, onGoToStep }: SequenceDisplayProps) {
   const getSequenceWithStatus = (): ValueWithStatus[] => {
     const allInsertedValues = new Map<number, number>();
     
@@ -92,7 +93,7 @@ export function SequenceDisplay({ steps, currentStep, className }: SequenceDispl
             <>
               {sequenceWithStatus.map((item, index) => {
                 let badgeClassName = "font-mono";
-                
+
                 if (item.status === "pending") {
                   badgeClassName += " bg-gray-500/15 text-gray-700 border-gray-600/30";
                 } else if (item.status === "deleted") {
@@ -100,10 +101,25 @@ export function SequenceDisplay({ steps, currentStep, className }: SequenceDispl
                 } else {
                   badgeClassName += " bg-green-500/15 text-green-700 border-green-600/30";
                 }
-                
+
+                // Adicionar classes de interatividade se onGoToStep estiver disponível
+                if (onGoToStep) {
+                  badgeClassName += " cursor-pointer hover:opacity-80 transition-opacity";
+
+                  // Destacar badge do step atual
+                  if (item.insertStepIndex === currentStep) {
+                    badgeClassName += " ring-2 ring-blue-500 ring-offset-1";
+                  }
+                }
+
                 return (
                   <React.Fragment key={`${item.value}-${index}`}>
-                    <Badge variant="outline" className={badgeClassName}>
+                    <Badge
+                      variant="outline"
+                      className={badgeClassName}
+                      onClick={() => onGoToStep?.(item.insertStepIndex)}
+                      title={onGoToStep ? `Ir para inserção do valor ${item.value}` : undefined}
+                    >
                       {item.value}
                     </Badge>
                     {index < sequenceWithStatus.length - 1 && (

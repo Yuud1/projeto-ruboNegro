@@ -389,7 +389,7 @@ export function PresentationMode({
       }`}
     >
       <div className="mb-4">
-        <SequenceDisplay steps={steps} currentStep={currentStep} />
+        <SequenceDisplay steps={steps} currentStep={currentStep} onGoToStep={goToStep} />
       </div>
 
       <div className="flex h-[calc(100vh-160px)] gap-4">
