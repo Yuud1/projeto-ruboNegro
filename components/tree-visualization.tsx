@@ -181,6 +181,21 @@ export function TreeVisualization({
             <p className="text-sm">A árvore aparecerá aqui quando você inserir valores</p>
           </div>
         </div>
+        {totalSteps > 0 && (
+          <div className="p-4 *:bg-card">
+            <StepNavigator
+              currentStep={currentStep}
+              totalSteps={totalSteps}
+              canGoNext={canGoNext}
+              canGoPrevious={canGoPrevious}
+              onNextStep={onNextStep}
+              onPreviousStep={onPreviousStep}
+              onGoToStep={onGoToStep}
+              onReset={onReset}
+              currentStepData={currentStepData}
+            />
+          </div>
+        )}
       </div>
     )
   }

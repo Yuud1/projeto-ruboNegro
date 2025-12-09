@@ -466,10 +466,10 @@ export function PresentationMode({
               }}
               className="flex-1"
             />
-            <Button onClick={handleInsert} size="sm">
+            <Button onClick={handleInsert} size="sm" className="cursor-pointer">
               <Plus className="w-4 h-4 mr-2" /> Inserir
             </Button>
-            <Button variant="destructive" onClick={handleRemove} size="sm">
+            <Button variant="destructive" onClick={handleRemove} size="sm" className="cursor-pointer">
               <Minus className="w-4 h-4 mr-2" /> Remover
             </Button>
           </div>

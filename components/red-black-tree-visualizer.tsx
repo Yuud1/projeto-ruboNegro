@@ -269,21 +269,21 @@ export const RedBlackTreeVisualizer = forwardRef<RedBlackTreeVisualizerHandle, P
                           onChange={(e) => setInputValue(e.target.value.replace(/[^0-9,\s-]/g, ""))}
                           onKeyDown={(e) => e.key === "Enter" && handleInsert()}
                         />
-                        <Button onClick={handleInsert}>
+                        <Button onClick={handleInsert} className="cursor-pointer">
                           <Plus className="w-4 h-4 mr-2" /> Inserir
                         </Button>
-                        <Button variant="destructive" onClick={handleDelete}>
+                        <Button variant="destructive" onClick={handleDelete} className="cursor-pointer">
                           <Minus className="w-4 h-4 mr-2" /> Remover
                         </Button>
                       </div>
                       <div className="flex gap-2">
-                        <Button variant="outline" onClick={resetTree}>
+                        <Button variant="outline" onClick={resetTree} className="cursor-pointer">
                           <RotateCcw className="w-4 h-4 mr-2" /> Resetar
                         </Button>
-                        <Button variant="outline" onClick={handleShare}>
+                        <Button variant="outline" onClick={handleShare} className="cursor-pointer">
                           <Share2 className="w-4 h-4 mr-2" /> Compartilhar
                         </Button>
-                        <Button variant="outline" onClick={() => setShowPresentation(true)}>
+                        <Button variant="outline" onClick={() => setShowPresentation(true)} className="cursor-pointer">
                           <Presentation className="w-4 h-4 mr-2" /> Apresentação
                         </Button>
                       </div>
