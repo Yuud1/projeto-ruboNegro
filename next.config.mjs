@@ -4,8 +4,8 @@ const nextConfig = {
   images: {
     unoptimized: true, // Disable default image optimization
   },
-  assetPrefix: isProd ? '/red-black/' : '',
-  basePath: isProd ? '/red-black' : '',
+  assetPrefix: isProd ? '/projeto-ruboNegro/' : '',
+  basePath: isProd ? '/projeto-ruboNegro' : '',
   output: 'export',
   distDir: 'dist',
 };
