@@ -1,7 +1,7 @@
 {
   "name": "red-black",
   "version": "0.1.0",
-  "homepage": "https://cayke1.github.io/red-black",
+  "homepage": "https://yuud1.github.io/projeto-ruboNegro",
   "private": true,
   "scripts": {
     "build": "next build",
@@ -10,7 +10,7 @@
     "start": "next start",
     "test": "jest",
     "predeploy": "npm run build",
-    "deploy": "gh-pages -d dist",
+    "deploy": "npx gh-pages -d dist",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
     "test-rbt": "tsx rb-tree-tester/cli.ts"
