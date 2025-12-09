@@ -5,9 +5,8 @@
 
 # next.js
 /.next/
-/out/*
-!/out/README.md
-
+/out/
+/dist
 # production
 /build
 

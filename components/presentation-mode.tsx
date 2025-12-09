@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
@@ -21,6 +21,7 @@ import {
   Minus,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import { SequenceDisplay } from "./sequence-display";
 
 interface PresentationModeProps {
   onExit: () => void;
@@ -380,13 +381,18 @@ export function PresentationMode({
     }
   };
 
+
   return (
     <div
       className={`fixed inset-0 z-50 bg-background ${
         isFullscreen ? "p-4" : "p-4"
       }`}
     >
-      <div className="flex h-[calc(100vh-140px)] gap-4">
+      <div className="mb-4">
+        <SequenceDisplay steps={steps} currentStep={currentStep} onGoToStep={goToStep} />
+      </div>
+
+      <div className="flex h-[calc(100vh-160px)] gap-4">
         <div className="flex-1">
           <Card className="h-full p-6">
             <TreeVisualization
@@ -460,10 +466,10 @@ export function PresentationMode({
               }}
               className="flex-1"
             />
-            <Button onClick={handleInsert} size="sm">
+            <Button onClick={handleInsert} size="sm" className="cursor-pointer">
               <Plus className="w-4 h-4 mr-2" /> Inserir
             </Button>
-            <Button variant="destructive" onClick={handleRemove} size="sm">
+            <Button variant="destructive" onClick={handleRemove} size="sm" className="cursor-pointer">
               <Minus className="w-4 h-4 mr-2" /> Remover
             </Button>
           </div>

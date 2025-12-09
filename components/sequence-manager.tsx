@@ -10,18 +10,21 @@ import { ScrollArea } from "@/components/ui/scroll-area"
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog"
-import { 
-  Save, 
+import {
+  Save,
   FolderOpen,
-  Trash2, 
-  Copy, 
-  Edit, 
+  Trash2,
+  Copy,
+  Edit,
   ChevronDown,
   History,
   Calendar,
-  FileText
+  FileText,
+  Download,
+  Upload
 } from "lucide-react"
 import { useSequenceStorage } from "@/hooks/use-sequence-storage"
+import { useToast } from "@/hooks/use-toast"
 import type { TreeStep } from "@/lib/red-black-tree"
 
 interface SequenceManagerProps {
@@ -38,21 +41,25 @@ export function SequenceManager({ currentSteps, onLoadSequence }: SequenceManage
     deleteSequence,
     loadSequence,
     duplicateSequence,
-    clearAllSequences
+    exportSequences,
+    importSequences,
+    refreshSequences
   } = useSequenceStorage()
 
+  const { toast } = useToast()
   const [isOpen, setIsOpen] = useState(false)
-  const [isSaveDialogOpen, setIsSaveDialogOpen] = useState(false)
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
   const [editingSequence, setEditingSequence] = useState<string | null>(null)
-  const [saveForm, setSaveForm] = useState({ name: "", description: "" })
   const [editForm, setEditForm] = useState({ name: "", description: "", numbers: "" })
+  const fileInputRef = useState<HTMLInputElement | null>(null)[0]
 
   const handleSave = () => {
-    if (saveForm.name.trim()) {
-      saveSequence(saveForm.name.trim(), currentSteps, saveForm.description.trim() || undefined)
-      setSaveForm({ name: "", description: "" })
-      setIsSaveDialogOpen(false)
+    if (currentSteps.length > 0) {
+      saveSequence(currentSteps)
+      toast({
+        title: "Sequência salva!",
+        description: "A sequência foi salva com sucesso.",
+      })
     }
   }
 
@@ -105,6 +112,10 @@ export function SequenceManager({ currentSteps, onLoadSequence }: SequenceManage
     const sequence = loadSequence(sequenceId)
     if (sequence) {
       onLoadSequence(sequence.operations)
+      toast({
+        title: "Sequência carregada!",
+        description: `${sequence.name} foi carregada com sucesso.`,
+      })
       setIsOpen(false)
     }
   }
@@ -117,7 +128,47 @@ export function SequenceManager({ currentSteps, onLoadSequence }: SequenceManage
   }
 
   const handleDelete = (sequenceId: string) => {
-    deleteSequence(sequenceId)
+    const success = deleteSequence(sequenceId)
+    if (success) {
+      toast({
+        title: "Sequência removida!",
+        description: "A sequência foi excluída com sucesso.",
+      })
+    }
+  }
+
+  const handleExport = () => {
+    exportSequences()
+    toast({
+      title: "Arquivo exportado!",
+      description: "As sequências foram exportadas com sucesso.",
+    })
+  }
+
+  const handleImportClick = () => {
+    const input = document.createElement('input')
+    input.type = 'file'
+    input.accept = '.json'
+    input.onchange = async (e) => {
+      const file = (e.target as HTMLInputElement).files?.[0]
+      if (file) {
+        const success = await importSequences(file)
+        if (success) {
+          refreshSequences()
+          toast({
+            title: "Sequências importadas!",
+            description: "As sequências foram importadas com sucesso.",
+          })
+        } else {
+          toast({
+            title: "Erro ao importar",
+            description: "Verifique se o arquivo está no formato correto.",
+            variant: "destructive",
+          })
+        }
+      }
+    }
+    input.click()
   }
 
 
@@ -155,53 +206,35 @@ export function SequenceManager({ currentSteps, onLoadSequence }: SequenceManage
         
         <CollapsibleContent className="mt-4">
           <div className="space-y-4">
-            <div className="flex gap-2">
-              <Dialog open={isSaveDialogOpen} onOpenChange={setIsSaveDialogOpen}>
-                <DialogTrigger asChild>
-                  <Button size="sm" className="flex items-center justify-center gap-1 flex-1 cursor-pointer">
-                    <Save className="w-3 h-3" />
-                    Salvar
-                  </Button>
-                </DialogTrigger>
-                <DialogContent>
-                  <DialogHeader>
-                    <DialogTitle>Salvar Sequência</DialogTitle>
-                    <p className="text-sm text-muted-foreground">
-                      Salve a sequência atual de operações para reutilizar posteriormente.
-                    </p>
-                  </DialogHeader>
-                  <div className="space-y-4">
-                    <div>
-                      <label className="text-sm font-medium">Nome da sequência</label>
-                      <Input
-                        value={saveForm.name}
-                        onChange={(e) => setSaveForm(prev => ({ ...prev, name: e.target.value }))}
-                        placeholder="Ex: Inserção de números pares"
-                        className="mt-1"
-                      />
-                    </div>
-                    <div>
-                      <label className="text-sm font-medium">Descrição (opcional)</label>
-                      <Textarea
-                        value={saveForm.description}
-                        onChange={(e) => setSaveForm(prev => ({ ...prev, description: e.target.value }))}
-                        placeholder="Descreva o que esta sequência faz..."
-                        className="mt-1"
-                        rows={3}
-                      />
-                    </div>
-                    <div className="flex justify-end gap-2">
-                      <Button variant="outline" onClick={() => setIsSaveDialogOpen(false)} className="cursor-pointer">
-                        Cancelar
-                      </Button>
-                      <Button onClick={handleSave} disabled={!saveForm.name.trim()} className="cursor-pointer">
-                        Salvar
-                      </Button>
-                    </div>
-                  </div>
-                </DialogContent>
-              </Dialog>
-
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+              <Button
+                size="sm"
+                onClick={handleSave}
+                disabled={currentSteps.length === 0}
+                className="flex items-center justify-center gap-1 cursor-pointer"
+              >
+                <Save className="w-3 h-3" />
+                Salvar
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={handleExport}
+                disabled={savedSequences.length === 0}
+                className="flex items-center justify-center gap-1 cursor-pointer"
+              >
+                <Download className="w-3 h-3" />
+                Exportar
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={handleImportClick}
+                className="flex items-center justify-center gap-1 cursor-pointer"
+              >
+                <Upload className="w-3 h-3" />
+                Importar
+              </Button>
             </div>
 
             {savedSequences.length > 0 ? (

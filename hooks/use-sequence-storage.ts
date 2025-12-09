@@ -49,17 +49,13 @@ export function useSequenceStorage() {
     }
   }, [])
 
-  const saveSequence = useCallback((
-    name: string, 
-    steps: TreeStep[], 
-    description?: string
-  ): string => {
+  const saveSequence = useCallback((steps: TreeStep[]): string => {
     const operations = steps
       .filter(step => step.type === 'insert' || step.type === 'delete')
       .map(step => {
         const valueMatch = step.description.match(/(?:Inserido|Removido) nó (\d+)/)
         const value = valueMatch ? parseInt(valueMatch[1]) : 0
-        
+
         return {
           type: step.type as 'insert' | 'delete',
           value,
@@ -67,10 +63,20 @@ export function useSequenceStorage() {
         }
       })
 
+    // Find the highest sequence number from existing sequences
+    const existingNumbers = savedSequences
+      .map(seq => {
+        const match = seq.name.match(/Sequência (\d+)/)
+        return match ? parseInt(match[1]) : 0
+      })
+      .filter(num => num > 0)
+
+    const nextNumber = existingNumbers.length > 0 ? Math.max(...existingNumbers) + 1 : 1
+
     const newSequence: SavedSequence = {
       id: `seq-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-      name,
-      description,
+      name: `Sequência ${nextNumber}`,
+      description: "",
       operations,
       createdAt: new Date(),
       updatedAt: new Date()
@@ -149,8 +155,8 @@ export function useSequenceStorage() {
         try {
           const imported = JSON.parse(e.target?.result as string)
           if (Array.isArray(imported)) {
-            const validSequences = imported.filter(seq => 
-              seq.id && seq.name && Array.isArray(seq.steps)
+            const validSequences = imported.filter(seq =>
+              seq.id && seq.name && Array.isArray(seq.operations)
             )
             
             if (validSequences.length > 0) {

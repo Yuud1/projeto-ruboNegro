@@ -10,6 +10,7 @@ import { PresentationMode } from "./presentation-mode"
 import { OperationHistory } from "./operation-history"
 import { SequenceManager } from "./sequence-manager"
 import { TreeStatistics } from "./tree-statistics"
+import { SequenceDisplay } from "./sequence-display"
 import { useRedBlackTree } from "@/hooks/use-red-black-tree"
 import { useToast } from "@/hooks/use-toast"
 import {
@@ -48,6 +49,9 @@ export interface RedBlackTreeVisualizerHandle {
 
   /** Retorna todo o histórico de passos (para salvar, compartilhar, etc) */
   getHistory: () => TreeStep[]
+
+  /** Preenche o input com valores sem inserir na árvore */
+  setInputValues: (values: number[]) => void
 }
 
 type Props = {
@@ -114,6 +118,10 @@ export const RedBlackTreeVisualizer = forwardRef<RedBlackTreeVisualizerHandle, P
       return result
     }, [getCurrentTree])
 
+    const setInputValues = useCallback((values: number[]) => {
+      setInputValue(values.join(", "))
+    }, [])
+
     // Expor API pública via ref
     useImperativeHandle(
       ref,
@@ -125,6 +133,7 @@ export const RedBlackTreeVisualizer = forwardRef<RedBlackTreeVisualizerHandle, P
         getCurrentValues,
         getCurrentTree,
         getHistory: () => steps,
+        setInputValues,
       }),
       [
         insert,
@@ -134,6 +143,7 @@ export const RedBlackTreeVisualizer = forwardRef<RedBlackTreeVisualizerHandle, P
         getCurrentValues,
         getCurrentTree,
         steps,
+        setInputValues,
       ]
     )
 
@@ -158,9 +168,9 @@ export const RedBlackTreeVisualizer = forwardRef<RedBlackTreeVisualizerHandle, P
     }
 
     const handleShare = async () => {
-      const values = getCurrentValues()
-      
-      if (values.length === 0) {
+      const insertSteps = steps.filter(step => step.type === "insert")
+
+      if (insertSteps.length === 0) {
         toast({
           title: "Árvore vazia",
           description: "Não há valores para compartilhar. Insira alguns valores primeiro.",
@@ -170,12 +180,17 @@ export const RedBlackTreeVisualizer = forwardRef<RedBlackTreeVisualizerHandle, P
       }
 
       try {
+        const values = insertSteps.map(step => {
+          const match = step.description.match(/Inserido nó (\d+)/)
+          return match ? parseInt(match[1], 10) : null
+        }).filter((v): v is number => v !== null)
+
         const params = new URLSearchParams()
         params.set("v", values.join(","))
         const shareUrl = `${window.location.origin}${window.location.pathname}?${params.toString()}`
-        
+
         await navigator.clipboard.writeText(shareUrl)
-        
+
         toast({
           title: "Link copiado!",
           description: "O link foi copiado para a área de transferência.",
@@ -188,6 +203,15 @@ export const RedBlackTreeVisualizer = forwardRef<RedBlackTreeVisualizerHandle, P
         })
       }
     }
+
+    const handleLoadSequence = useCallback((operations: Array<{type: 'insert' | 'delete', value: number}>) => {
+      const values = operations.map(op => op.value).join(", ")
+      setInputValue(values)
+    }, [])
+
+    const handleGenerateRandom = useCallback((values: number[]) => {
+      setInputValue(values.join(", "))
+    }, [])
 
     const currentTree = getCurrentTree()
     const currentStepData = getCurrentStep()
@@ -245,21 +269,21 @@ export const RedBlackTreeVisualizer = forwardRef<RedBlackTreeVisualizerHandle, P
                           onChange={(e) => setInputValue(e.target.value.replace(/[^0-9,\s-]/g, ""))}
                           onKeyDown={(e) => e.key === "Enter" && handleInsert()}
                         />
-                        <Button onClick={handleInsert}>
+                        <Button onClick={handleInsert} className="cursor-pointer">
                           <Plus className="w-4 h-4 mr-2" /> Inserir
                         </Button>
-                        <Button variant="destructive" onClick={handleDelete}>
+                        <Button variant="destructive" onClick={handleDelete} className="cursor-pointer">
                           <Minus className="w-4 h-4 mr-2" /> Remover
                         </Button>
                       </div>
                       <div className="flex gap-2">
-                        <Button variant="outline" onClick={resetTree}>
+                        <Button variant="outline" onClick={resetTree} className="cursor-pointer">
                           <RotateCcw className="w-4 h-4 mr-2" /> Resetar
                         </Button>
-                        <Button variant="outline" onClick={handleShare}>
+                        <Button variant="outline" onClick={handleShare} className="cursor-pointer">
                           <Share2 className="w-4 h-4 mr-2" /> Compartilhar
                         </Button>
-                        <Button variant="outline" onClick={() => setShowPresentation(true)}>
+                        <Button variant="outline" onClick={() => setShowPresentation(true)} className="cursor-pointer">
                           <Presentation className="w-4 h-4 mr-2" /> Apresentação
                         </Button>
                       </div>
@@ -273,6 +297,9 @@ export const RedBlackTreeVisualizer = forwardRef<RedBlackTreeVisualizerHandle, P
                     {isSidebarCollapsed ? <ChevronRight /> : <ChevronLeft />}
                   </Card>
                 </div>
+
+                {/* Sequência de valores */}
+                <SequenceDisplay steps={steps} currentStep={currentStep} onGoToStep={goToStepInternal} />
 
                 {/* Árvore */}
                 <Card className="p-6">
@@ -297,8 +324,8 @@ export const RedBlackTreeVisualizer = forwardRef<RedBlackTreeVisualizerHandle, P
               {/* Sidebar */}
               {(!isSidebarCollapsed || typeof window !== "undefined" && window.innerWidth < 1024) && (
                 <div className={`${isSidebarCollapsed ? "hidden lg:block" : "block"} lg:w-80 space-y-6`}>
-                  <RandomGenerator onGenerate={insert} />
-                  <SequenceManager currentSteps={steps} onLoadSequence={loadSequence} />
+                  <RandomGenerator onGenerate={handleGenerateRandom} />
+                  <SequenceManager currentSteps={steps} onLoadSequence={handleLoadSequence} />
                   <OperationHistory steps={steps} currentStep={currentStep} onGoToStep={goToStepInternal} />
                   <TreeStatistics tree={currentTree} />
                 </div>
